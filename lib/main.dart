@@ -5,13 +5,9 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habitera/common/theme/app_theme_data.dart';
 import 'package:habitera/features/auth/presentation/auth_provider.dart';
-import 'package:habitera/features/auth/presentation/confirm_email_screen.dart';
-import 'package:habitera/features/auth/presentation/reset_password_screen.dart';
 import 'package:habitera/notification_service.dart';
-import 'package:habitera/onboarding_screen.dart';
 // import 'package:habitera/isar_service.dart';
 import 'package:habitera/router/app_router.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 void main() async {
@@ -21,16 +17,12 @@ void main() async {
   await Supabase.initialize(
     url: dotenv.env['SUPABASE_URL']!,
     anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
-    // when app is launched from cold start, exchange token from URL, android config
     authOptions: FlutterAuthClientOptions(
       authFlowType: AuthFlowType.pkce
     )
   );
 
   await NotificationService.initNotification();
-
-  // final prefs = await SharedPreferences.getInstance();
-  // prefs.clear();
 
   runApp(const ProviderScope(child: MyApp()));
 }
@@ -73,6 +65,12 @@ class _MyAppState extends ConsumerState<MyApp> {
       debugShowCheckedModeBanner: false,
     );
 
+
+
+  // when app is launched from cold start, exchange token from URL, android config authoptions part
+
+  // final prefs = await SharedPreferences.getInstance();
+  // prefs.clear();
     //* For testing purposes only, to avoid going through the auth flow
     // return MaterialApp(
     //   title: 'Habitera',

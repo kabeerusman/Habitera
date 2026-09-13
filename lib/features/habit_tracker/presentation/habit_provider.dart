@@ -21,6 +21,7 @@ class Habits extends _$Habits {
     state = AsyncData([...current, habit]);
     final addedHabit = await _repo.addHabit(habit);
     return addedHabit;
+    // ref.invalidateSelf();
   }
 
   Future<Habit> restoreDeletedHabit(Habit habit, int index) async {
@@ -87,6 +88,7 @@ class DoneHabitIds extends _$DoneHabitIds {
         ? current.where((id) => id != habitId).toSet()
         : {...current, habitId};
     state = AsyncData(newSet);
+    print('Done Habit Ids Today: ${state.value}');
     await _repo.toggleDone(habitId);
     // ref.invalidateSelf();
   }

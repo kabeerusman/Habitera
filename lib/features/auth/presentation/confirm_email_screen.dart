@@ -104,7 +104,9 @@ class _ConfirmEmailScreenState extends ConsumerState<ConfirmEmailScreen> {
                           }
                         } catch (error) {
                           var message = 'Something went wrong. Try again';
-                          if (error is AuthException) {
+                          if (error is AuthRetryableFetchException) {
+                            message = 'Please check your internet connection';
+                          } else if (error is AuthException) {
                             message = error.message;
                           }
                           if (context.mounted) {

@@ -1,5 +1,6 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first, avoid_unnecessary_containers
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -133,10 +134,18 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen> {
                       habits: habits,
                     );
                   },
-                  error: (error, stack) => Center(child: Text('Error: $error')),
+                  error: (error, _) {
+                    var message = 'Something went wrong. Try again';
+                    if (error is SocketException) {
+                      return Center(
+                        child: Text('Please check your internet connection'),
+                      );
+                    }
+                    return Center(child: Text(message));
+                  },
                   loading: () =>
                       Center(child: CircularProgressIndicator.adaptive()),
-                ),
+                )
               ),
               // CreateHabitButton(),
             ],
@@ -250,7 +259,13 @@ class HabitListView extends ConsumerWidget {
           },
           isDone: isDone,
           onChanged: (value) async {
-            ref.read(doneHabitIdsProvider.notifier).toggleDone(habit.id);
+              // ref.read(doneHabitIdsProvider.notifier).toggleDone(habit.id);
+            try {
+              ref.read(doneHabitIdsProvider.notifier).toggleDone(habit.id);
+            } catch (e) {
+              print('ERROR FROM CHECKIN: $e');
+            }
+            // print('aaaaa');
           },
         );
       },

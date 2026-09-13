@@ -40,6 +40,8 @@ android {
         versionName = "1.0.0"
     }
 
+    // add signing config here
+    // change debug to release in the builtype
 
     buildTypes {
         release {

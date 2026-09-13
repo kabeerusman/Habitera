@@ -56,7 +56,7 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
                   obscureText: false,
                   controller: _passwordController,
                   keyboardType: TextInputType.visiblePassword,
-                  validator: Validators.validateNewPassword,
+                  validator: Validators.validatePassword,
                   labelText: 'Enter your new password',
                 ),
                 kSizedBoxH20,
@@ -102,7 +102,10 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
                               }
                             } catch (error) {
                               var message = 'Something went wrong. Try again';
-                              if (error is AuthException) {
+                              if (error is AuthRetryableFetchException) {
+                                message =
+                                    'Please check your internet connection';
+                              } else if (error is AuthException) {
                                 message = error.message;
                               }
                               if (context.mounted) {
@@ -122,9 +125,7 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
                           }
                         },
                   style: ElevatedButton.styleFrom(shape: StadiumBorder()),
-                  child: _isLoading
-                      ? AuthCircularProgress()
-                      : Text('Reset'),
+                  child: _isLoading ? AuthCircularProgress() : Text('Reset'),
                 ),
               ],
             ),

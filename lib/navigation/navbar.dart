@@ -1,17 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
-import 'package:habitera/constants/color_picker.dart';
 import 'package:habitera/constants/enums.dart';
-import 'package:habitera/constants/sizes.dart';
-import 'package:habitera/features/habit_tracker/presentation/add_habit_screen.dart';
-import 'package:habitera/features/habit_tracker/presentation/chats_screen.dart';
 import 'package:habitera/features/habit_tracker/presentation/habits_screen.dart';
 import 'package:habitera/features/habit_tracker/presentation/profile_screen.dart';
-import 'package:habitera/features/habit_tracker/presentation/shop_screen.dart';
 import 'package:habitera/features/habit_tracker/presentation/widgets/habit_type_bottom_sheet.dart';
 import 'package:habitera/router/app_router.dart';
-import 'package:habitera/utils/extensions.dart';
 
 class NavBar extends StatefulWidget {
   const NavBar({super.key});
@@ -21,14 +14,22 @@ class NavBar extends StatefulWidget {
 }
 
 class _NavBarState extends State<NavBar> {
-  final screens = [const HabitsScreen(), const ProfileScreen()];
+  final _screens = const [ HabitsScreen(), ProfileScreen()];
 
   var _currentIndex = 0;
+
+  static const _navigationDestinations = [
+    NavigationDestination(icon: Icon(Icons.checklist_rounded), label: 'Habits'),
+    NavigationDestination(
+      icon: Icon(Icons.person_rounded),
+      label: 'Profile',
+    ),
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: screens[_currentIndex],
+      body: _screens[_currentIndex],
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           border: Border(top: BorderSide(color: Colors.grey.shade300)),
@@ -40,22 +41,7 @@ class _NavBarState extends State<NavBar> {
               _currentIndex = index;
             });
           },
-          destinations: [
-            NavigationDestination(
-              icon: Icon(Icons.checklist_rounded),
-              // icon: Icon(Icons.task_alt_rounded),
-              // icon: SvgPicture.asset(
-              //   'assets/icons/habits.svg',
-              //   fit: BoxFit.scaleDown,
-              //   width: 22,
-              // ),
-              label: 'Habits',
-            ),
-            const NavigationDestination(
-              icon: Icon(Icons.person_rounded),
-              label: 'Profile',
-            ),
-          ],
+          destinations: _navigationDestinations,
         ),
       ),
       floatingActionButton: FloatingActionButton(

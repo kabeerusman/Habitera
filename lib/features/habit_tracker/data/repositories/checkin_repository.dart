@@ -49,6 +49,7 @@ class CheckinRepository {
     final doneHabitIdsToday = doneCheckinsToday
         .map((doneCheckin) => doneCheckin['habit_id'] as String)
         .toSet();
+    // print('Done Habit Ids Today: $doneHabitIdsToday');
     return doneHabitIdsToday;
   }
 
