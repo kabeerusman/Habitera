@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:habitera/constants/enums.dart';
 import 'package:habitera/features/habit_tracker/presentation/habits_screen.dart';
-import 'package:habitera/features/habit_tracker/presentation/profile_screen.dart';
-import 'package:habitera/features/habit_tracker/presentation/widgets/habit_type_bottom_sheet.dart';
-import 'package:habitera/router/app_router.dart';
+import 'package:habitera/features/habit_tracker/presentation/settings_screen.dart';
+import 'package:habitera/features/habit_tracker/presentation/today_screen.dart';
 
 class NavBar extends StatefulWidget {
   const NavBar({super.key});
@@ -14,21 +11,33 @@ class NavBar extends StatefulWidget {
 }
 
 class _NavBarState extends State<NavBar> {
-  final _screens = const [ HabitsScreen(), ProfileScreen()];
+  final _screens = const [TodayScreen(), HabitsScreen(), SettingsScreen()];
 
   var _currentIndex = 0;
 
   static const _navigationDestinations = [
-    NavigationDestination(icon: Icon(Icons.checklist_rounded), label: 'Habits'),
     NavigationDestination(
-      icon: Icon(Icons.person_rounded),
-      label: 'Profile',
+      icon: Icon(Icons.check_circle_outline_rounded),
+      selectedIcon: Icon(Icons.check_circle_rounded),
+      label: 'Today',
+    ),
+    NavigationDestination(
+      icon: Icon(Icons.checklist_rounded),
+      label: 'Habits',
+    ),
+    NavigationDestination(
+      icon: Icon(Icons.settings_outlined),
+      selectedIcon: Icon(Icons.settings_rounded),
+      label: 'Settings',
     ),
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // Each screen owns its own Scaffold/FAB (the FAB is Today-only in v2;
+      // Habits gets a header add-icon-button instead), so this outer
+      // Scaffold only hosts the shared bottom nav.
       body: _screens[_currentIndex],
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
@@ -43,36 +52,6 @@ class _NavBarState extends State<NavBar> {
           },
           destinations: _navigationDestinations,
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        shape: CircleBorder(),
-        onPressed: () async {
-          final type = await showModalBottomSheet<HabitType>(
-            context: context,
-            builder: (_) => HabitTypeBottomSheet(),
-          );
-
-          if (type == null || !context.mounted) return;
-
-          final added = await context.pushNamed<bool>(
-            AppRoutes.addHabitsScreen.name,
-            pathParameters: {'type': type.name},
-          );
-
-          if (!context.mounted) return;
-
-          if (added == true) {
-            final messenger = ScaffoldMessenger.of(context);
-            messenger.hideCurrentSnackBar();
-            messenger.showSnackBar(
-              SnackBar(
-                duration: Duration(seconds: 2),
-                content: Text('Habit added'),
-              ),
-            );
-          }
-        },
-        child: Icon(Icons.add),
       ),
     );
   }

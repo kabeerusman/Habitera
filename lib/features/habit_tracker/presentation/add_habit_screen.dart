@@ -13,6 +13,8 @@ import 'package:habitera/features/habit_tracker/data/models/habit.dart';
 import 'package:habitera/features/habit_tracker/data/models/habit_isar.dart';
 import 'package:habitera/features/habit_tracker/presentation/habit_provider.dart';
 import 'package:habitera/features/habit_tracker/presentation/widgets/custom_switch.dart';
+import 'package:habitera/features/habit_tracker/presentation/widgets/emoji_picker_field.dart';
+import 'package:habitera/features/settings/presentation/settings_provider.dart';
 import 'package:habitera/notification_service.dart';
 import 'package:habitera/utils/extensions.dart';
 import 'package:habitera/utils/time_picker.dart';
@@ -62,6 +64,8 @@ class _AddHabitScreenState extends ConsumerState<AddHabitScreen> {
 
   var switchValue = false;
 
+  var selectedEmoji = kDefaultHabitEmoji;
+
   @override
   Widget build(BuildContext context) {
     final title = widget.type == HabitType.startHabit
@@ -81,6 +85,20 @@ class _AddHabitScreenState extends ConsumerState<AddHabitScreen> {
                 children: [
                   Column(
                     children: [
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text('Icon', style: context.formTitle),
+                      ),
+                      kSizedBoxH8,
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: EmojiPickerField(
+                          selectedEmoji: selectedEmoji,
+                          onChanged: (emoji) =>
+                              setState(() => selectedEmoji = emoji),
+                        ),
+                      ),
+                      kSizedBoxH15,
                       TitleField(
                         controller: textController,
                         title: 'Title',
@@ -172,7 +190,10 @@ class _AddHabitScreenState extends ConsumerState<AddHabitScreen> {
                             ),
                             IconButton(
                               onPressed: () async {
-                                final picked = await pickTime(context, selectedTime);
+                                final picked = await pickTime(
+                                  context,
+                                  selectedTime,
+                                );
                                 if (picked != null) {
                                   setState(() => selectedTime = picked);
                                 }
@@ -183,60 +204,66 @@ class _AddHabitScreenState extends ConsumerState<AddHabitScreen> {
                         ),
                     ],
                   ),
-                  //TODO: Find a way to adjust this
-                  SizedBox(height: 180),
-                  AddHabitButton(
-                    formKey: _formKey,
-                    ref: ref,
-                    textController: textController,
-                    widget: widget,
-                    selectedFrequency: _selectedFrequency,
-                    isSubmitting: _isSubmitting,
-                    onPressed: () async {
-                      FocusScope.of(context).unfocus();
-                      // print(timeOfDay);
-                      if (!_formKey.currentState!.validate()) return;
-
-                      setState(() => _isSubmitting = true);
-
-                      final repository = ref.read(habitRepositoryProvider);
-
-                      // final habit = HabitIsar()
-                      //   ..title = textController.text
-                      //   ..type = widget.type.index
-                      //   ..frequency = _selectedFrequency.index
-                      //   ..createdAt = DateTime.now();
-                      final habit = Habit(
-                        userId: '',
-                        title: textController.text,
-                        type: widget.type.index,
-                        createdAt: DateTime.now(),
-                        frequency: _selectedFrequency.index,
-                        reminderTime: switchValue ? selectedTime : null,
-                      );
-
-                      final addedHabit = await repository.addHabit(habit);
-
-                      if (addedHabit.reminderTime != null) {
-                        NotificationService.scheduleReminder(
-                          id: addedHabit.notificationId!,
-                          title: addedHabit.title,
-                          body: reminderBody,
-                          hour: addedHabit.reminderTime!.hour,
-                          minute: addedHabit.reminderTime!.minute,
-                        );
-                      }
-
-                      ref.invalidate(habitsProvider);
-
-                      textController.clear();
-                      if (!context.mounted) return;
-                      context.pop(true);
-                    },
-                  ),
                 ],
               ),
             ),
+          ),
+        ),
+      ),
+      bottomNavigationBar: SafeArea(
+        minimum: const EdgeInsets.all(16.0),
+        child: SizedBox(
+          width: double.infinity,
+          child: AddHabitButton(
+            formKey: _formKey,
+            ref: ref,
+            textController: textController,
+            widget: widget,
+            selectedFrequency: _selectedFrequency,
+            isSubmitting: _isSubmitting,
+            onPressed: () async {
+              FocusScope.of(context).unfocus();
+              // print(timeOfDay);
+              if (!_formKey.currentState!.validate()) return;
+
+              setState(() => _isSubmitting = true);
+
+              final repository = ref.read(habitRepositoryProvider);
+
+              // final habit = HabitIsar()
+              //   ..title = textController.text
+              //   ..type = widget.type.index
+              //   ..frequency = _selectedFrequency.index
+              //   ..createdAt = DateTime.now();
+              final habit = Habit(
+                userId: '',
+                title: textController.text,
+                type: widget.type.index,
+                createdAt: DateTime.now(),
+                frequency: _selectedFrequency.index,
+                reminderTime: switchValue ? selectedTime : null,
+                emoji: selectedEmoji,
+              );
+
+              final addedHabit = await repository.addHabit(habit);
+
+              final remindersEnabled = ref.read(remindersEnabledProvider);
+              if (addedHabit.reminderTime != null && remindersEnabled) {
+                NotificationService.scheduleReminder(
+                  id: addedHabit.notificationId!,
+                  title: addedHabit.title,
+                  body: reminderBody,
+                  hour: addedHabit.reminderTime!.hour,
+                  minute: addedHabit.reminderTime!.minute,
+                );
+              }
+
+              ref.invalidate(habitsProvider);
+
+              textController.clear();
+              if (!context.mounted) return;
+              context.pop(true);
+            },
           ),
         ),
       ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:habitera/constants/enums.dart';
 
 const _keep = Object();
 
@@ -12,6 +13,7 @@ class Habit {
     required this.frequency,
     this.reminderTime,
     this.notificationId,
+    this.emoji = kDefaultHabitEmoji,
   });
 
   final String id;
@@ -22,6 +24,7 @@ class Habit {
   final int frequency;
   final TimeOfDay? reminderTime;
   final int? notificationId;
+  final String emoji;
 
   Habit copyWith({
     String? id,
@@ -32,6 +35,7 @@ class Habit {
     int? frequency,
     Object? reminderTime = _keep,
     Object? notificationId = _keep,
+    String? emoji,
   }) {
     return Habit(
       id: id ?? this.id,
@@ -42,6 +46,7 @@ class Habit {
       frequency: frequency ?? this.frequency,
       reminderTime: reminderTime == _keep ? this.reminderTime : reminderTime as TimeOfDay?,
       notificationId: notificationId == _keep ? this.notificationId : notificationId as int?,
+      emoji: emoji ?? this.emoji,
     );
   }
 
@@ -56,6 +61,7 @@ class Habit {
       'reminder_hour': reminderTime?.hour,
       'reminder_minute': reminderTime?.minute,
       'notification_id': notificationId,
+      'emoji': emoji,
     };
   }
 
@@ -75,11 +81,12 @@ class Habit {
             )
           : null,
       notificationId: map['notification_id'] as int?,
+      emoji: (map['emoji'] as String?) ?? kDefaultHabitEmoji,
     );
   }
   @override
   String toString() {
-    return 'Habit(id: $id, userId: $userId, title: $title, type: $type, createdAt: $createdAt, frequency: $frequency, reminderTime: $reminderTime, notificationId: $notificationId)';
+    return 'Habit(id: $id, userId: $userId, title: $title, type: $type, createdAt: $createdAt, frequency: $frequency, reminderTime: $reminderTime, notificationId: $notificationId, emoji: $emoji)';
   }
 }
   // String toJson() => json.encode(toMap());

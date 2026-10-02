@@ -189,6 +189,151 @@ class _CheckinDayKeysForHabitProviderElement
   String get habitId => (origin as CheckinDayKeysForHabitProvider).habitId;
 }
 
+String _$habitStatsHash() => r'aeb0b35577211ddb60fe57cef901cad023ac54b9';
+
+/// See also [habitStats].
+@ProviderFor(habitStats)
+const habitStatsProvider = HabitStatsFamily();
+
+/// See also [habitStats].
+class HabitStatsFamily extends Family<AsyncValue<HabitStats>> {
+  /// See also [habitStats].
+  const HabitStatsFamily();
+
+  /// See also [habitStats].
+  HabitStatsProvider call(
+    String habitId,
+    DateTime createdAt,
+  ) {
+    return HabitStatsProvider(
+      habitId,
+      createdAt,
+    );
+  }
+
+  @override
+  HabitStatsProvider getProviderOverride(
+    covariant HabitStatsProvider provider,
+  ) {
+    return call(
+      provider.habitId,
+      provider.createdAt,
+    );
+  }
+
+  static const Iterable<ProviderOrFamily>? _dependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
+
+  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
+      _allTransitiveDependencies;
+
+  @override
+  String? get name => r'habitStatsProvider';
+}
+
+/// See also [habitStats].
+class HabitStatsProvider extends AutoDisposeFutureProvider<HabitStats> {
+  /// See also [habitStats].
+  HabitStatsProvider(
+    String habitId,
+    DateTime createdAt,
+  ) : this._internal(
+          (ref) => habitStats(
+            ref as HabitStatsRef,
+            habitId,
+            createdAt,
+          ),
+          from: habitStatsProvider,
+          name: r'habitStatsProvider',
+          debugGetCreateSourceHash:
+              const bool.fromEnvironment('dart.vm.product')
+                  ? null
+                  : _$habitStatsHash,
+          dependencies: HabitStatsFamily._dependencies,
+          allTransitiveDependencies:
+              HabitStatsFamily._allTransitiveDependencies,
+          habitId: habitId,
+          createdAt: createdAt,
+        );
+
+  HabitStatsProvider._internal(
+    super._createNotifier, {
+    required super.name,
+    required super.dependencies,
+    required super.allTransitiveDependencies,
+    required super.debugGetCreateSourceHash,
+    required super.from,
+    required this.habitId,
+    required this.createdAt,
+  }) : super.internal();
+
+  final String habitId;
+  final DateTime createdAt;
+
+  @override
+  Override overrideWith(
+    FutureOr<HabitStats> Function(HabitStatsRef provider) create,
+  ) {
+    return ProviderOverride(
+      origin: this,
+      override: HabitStatsProvider._internal(
+        (ref) => create(ref as HabitStatsRef),
+        from: from,
+        name: null,
+        dependencies: null,
+        allTransitiveDependencies: null,
+        debugGetCreateSourceHash: null,
+        habitId: habitId,
+        createdAt: createdAt,
+      ),
+    );
+  }
+
+  @override
+  AutoDisposeFutureProviderElement<HabitStats> createElement() {
+    return _HabitStatsProviderElement(this);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is HabitStatsProvider &&
+        other.habitId == habitId &&
+        other.createdAt == createdAt;
+  }
+
+  @override
+  int get hashCode {
+    var hash = _SystemHash.combine(0, runtimeType.hashCode);
+    hash = _SystemHash.combine(hash, habitId.hashCode);
+    hash = _SystemHash.combine(hash, createdAt.hashCode);
+
+    return _SystemHash.finish(hash);
+  }
+}
+
+mixin HabitStatsRef on AutoDisposeFutureProviderRef<HabitStats> {
+  /// The parameter `habitId` of this provider.
+  String get habitId;
+
+  /// The parameter `createdAt` of this provider.
+  DateTime get createdAt;
+}
+
+class _HabitStatsProviderElement
+    extends AutoDisposeFutureProviderElement<HabitStats> with HabitStatsRef {
+  _HabitStatsProviderElement(super.provider);
+
+  @override
+  String get habitId => (origin as HabitStatsProvider).habitId;
+  @override
+  DateTime get createdAt => (origin as HabitStatsProvider).createdAt;
+}
+
 String _$habitsHash() => r'a5ecb839149ed2739da08329858426c8a2f79a1a';
 
 /// See also [Habits].
@@ -203,7 +348,7 @@ final habitsProvider = AsyncNotifierProvider<Habits, List<Habit>>.internal(
 );
 
 typedef _$Habits = AsyncNotifier<List<Habit>>;
-String _$doneHabitIdsHash() => r'3d624838ee71332f1fb5d9e5b4648bdd4f5d70b9';
+String _$doneHabitIdsHash() => r'c727f47dc9932654f1a907c577e40d2be5816f49';
 
 /// See also [DoneHabitIds].
 @ProviderFor(DoneHabitIds)

@@ -9,6 +9,8 @@ import 'package:habitera/features/habit_tracker/data/models/habit.dart';
 import 'package:habitera/features/habit_tracker/data/models/habit_isar.dart';
 import 'package:habitera/features/habit_tracker/presentation/habit_provider.dart';
 import 'package:habitera/features/habit_tracker/presentation/widgets/custom_switch.dart';
+import 'package:habitera/features/habit_tracker/presentation/widgets/emoji_picker_field.dart';
+import 'package:habitera/features/settings/presentation/settings_provider.dart';
 import 'package:habitera/notification_service.dart';
 import 'package:habitera/utils/extensions.dart';
 import 'package:habitera/utils/time_picker.dart';
@@ -50,11 +52,13 @@ class _EditHabitScreenState extends ConsumerState<EditHabitScreen> {
   TimeOfDay? _timeOfDay;
   late TimeOfDay selectedTime;
   late bool switchValue;
+  late String selectedEmoji;
 
   @override
   void initState() {
     super.initState();
     textController = TextEditingController(text: widget.habit.title);
+    selectedEmoji = widget.habit.emoji;
     if (widget.habit.reminderTime != null) {
       selectedTime = TimeOfDay(
         hour: widget.habit.reminderTime!.hour,
@@ -93,6 +97,20 @@ class _EditHabitScreenState extends ConsumerState<EditHabitScreen> {
                 children: [
                   Column(
                     children: [
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text('Icon', style: context.formTitle),
+                      ),
+                      kSizedBoxH8,
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: EmojiPickerField(
+                          selectedEmoji: selectedEmoji,
+                          onChanged: (emoji) =>
+                              setState(() => selectedEmoji = emoji),
+                        ),
+                      ),
+                      kSizedBoxH15,
                       TitleField(
                         controller: textController,
                         title: 'Title',
@@ -180,77 +198,6 @@ class _EditHabitScreenState extends ConsumerState<EditHabitScreen> {
                           ],
                         ),
                     ],
-                  ),
-                  SizedBox(height: 180),
-
-                  AddHabitButton(
-                    formKey: _formKey,
-                    ref: ref,
-                    textController: textController,
-                    widget: widget,
-                    selectedFrequency: _selectedFrequency,
-                    isSubmitting: _isSubmitting,
-                    onPressed: () async {
-                      FocusScope.of(context).unfocus();
-                      if (!_formKey.currentState!.validate()) return;
-
-                      setState(() => _isSubmitting = true);
-
-                      final repository = ref.read(habitRepositoryProvider);
-
-                      // ----------------------------------------
-                      var notificationId = habit.notificationId;
-
-                      final hadReminder = habit.reminderTime != null;
-                      final wantsReminder = switchValue;
-                      final doesNotHaveReminder = notificationId == null;
-
-                      if (wantsReminder && doesNotHaveReminder) {
-                        notificationId = repository.generateNotificationId();
-                      }
-
-                      final editedHabit = habit.copyWith(
-                        title: textController.text,
-                        frequency: _selectedFrequency.index,
-                        reminderTime: switchValue ? selectedTime : null,
-                        notificationId: notificationId,
-                      );
-                      await repository.editHabit(editedHabit);
-
-                      if (hadReminder && wantsReminder) {
-                        NotificationService.cancelNotification(
-                          habit.notificationId!,
-                        );
-                        NotificationService.scheduleReminder(
-                          id: editedHabit.notificationId!,
-                          title: editedHabit.title,
-                          body: reminderBody,
-                          hour: editedHabit.reminderTime!.hour,
-                          minute: editedHabit.reminderTime!.minute,
-                        );
-                      }
-
-                      if (hadReminder && !wantsReminder) {
-                        NotificationService.cancelNotification(
-                          habit.notificationId!,
-                        );
-                      }
-                      if (!hadReminder && wantsReminder) {
-                        NotificationService.scheduleReminder(
-                          id: editedHabit.notificationId!,
-                          title: editedHabit.title,
-                          body: reminderBody,
-                          hour: editedHabit.reminderTime!.hour,
-                          minute: editedHabit.reminderTime!.minute,
-                        );
-                      }
-
-                      ref.invalidate(habitsProvider);
-
-                      if (context.mounted) {
-                        context.pop();
-                      }
-                    },
                   ),
                   // AddHabitButton(
                   //   formKey: _formKey,
@@ -344,6 +291,82 @@ class _EditHabitScreenState extends ConsumerState<EditHabitScreen> {
                 ],
               ),
             ),
+          ),
+        ),
+      ),
+      bottomNavigationBar: SafeArea(
+        minimum: const EdgeInsets.all(16.0),
+        child: SizedBox(
+          width: double.infinity,
+          child: AddHabitButton(
+            formKey: _formKey,
+            ref: ref,
+            textController: textController,
+            widget: widget,
+            selectedFrequency: _selectedFrequency,
+            isSubmitting: _isSubmitting,
+            onPressed: () async {
+              FocusScope.of(context).unfocus();
+              if (!_formKey.currentState!.validate()) return;
+
+              setState(() => _isSubmitting = true);
+
+              final repository = ref.read(habitRepositoryProvider);
+
+              // ----------------------------------------
+              var notificationId = habit.notificationId;
+
+              final hadReminder = habit.reminderTime != null;
+              final wantsReminder = switchValue;
+              final doesNotHaveReminder = notificationId == null;
+
+              if (wantsReminder && doesNotHaveReminder) {
+                notificationId = repository.generateNotificationId();
+              }
+
+              final editedHabit = habit.copyWith(
+                title: textController.text,
+                frequency: _selectedFrequency.index,
+                reminderTime: switchValue ? selectedTime : null,
+                notificationId: notificationId,
+                emoji: selectedEmoji,
+              );
+              await repository.editHabit(editedHabit);
+
+              final remindersEnabled = ref.read(remindersEnabledProvider);
+
+              if (hadReminder && wantsReminder) {
+                NotificationService.cancelNotification(habit.notificationId!);
+                if (remindersEnabled) {
+                  NotificationService.scheduleReminder(
+                    id: editedHabit.notificationId!,
+                    title: editedHabit.title,
+                    body: reminderBody,
+                    hour: editedHabit.reminderTime!.hour,
+                    minute: editedHabit.reminderTime!.minute,
+                  );
+                }
+              }
+
+              if (hadReminder && !wantsReminder) {
+                NotificationService.cancelNotification(habit.notificationId!);
+              }
+              if (!hadReminder && wantsReminder && remindersEnabled) {
+                NotificationService.scheduleReminder(
+                  id: editedHabit.notificationId!,
+                  title: editedHabit.title,
+                  body: reminderBody,
+                  hour: editedHabit.reminderTime!.hour,
+                  minute: editedHabit.reminderTime!.minute,
+                );
+              }
+
+              ref.invalidate(habitsProvider);
+
+              if (context.mounted) {
+                context.pop();
+              }
+            },
           ),
         ),
       ),

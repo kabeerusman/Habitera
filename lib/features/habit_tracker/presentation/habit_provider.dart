@@ -3,6 +3,7 @@ import 'package:habitera/features/habit_tracker/data/models/habit_isar.dart';
 import 'package:habitera/features/habit_tracker/data/repositories/checkin_repository.dart';
 import 'package:habitera/features/habit_tracker/data/repositories/habit_repository.dart';
 // import 'package:habitera/features/habit_tracker/domain/habit.dart';
+import 'package:habitera/utils/date_utils.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'habit_provider.g.dart';
@@ -101,6 +102,70 @@ Future<Set<int>> checkinDayKeysForHabit(
 ) async {
   final repo = ref.read(checkinRepositoryProvider);
   return await repo.getCheckinDayKeysForHabit(habitId);
+}
+
+/// Derived numbers shown on the habit details screen (stat cards +
+/// consistency grid). Bundled into one object so the screen does one
+/// `ref.watch` instead of juggling four separate async values.
+class HabitStats {
+  const HabitStats({
+    required this.currentStreak,
+    required this.bestStreak,
+    required this.totalCheckins,
+    required this.completionRate,
+    required this.dayKeys,
+  });
+
+  final int currentStreak;
+  final int bestStreak;
+  final int totalCheckins;
+  final double completionRate;
+
+  /// Every day (as a dayKey) this habit was checked in, including today's
+  /// optimistic state. Reused by the consistency grid so it doesn't need
+  /// its own query.
+  final Set<int> dayKeys;
+}
+
+@riverpod
+Future<HabitStats> habitStats(
+  HabitStatsRef ref,
+  String habitId,
+  DateTime createdAt,
+) async {
+  final repo = ref.read(checkinRepositoryProvider);
+  final storedDayKeys = await repo.getAllCheckinDayKeysForHabit(habitId);
+
+  // doneHabitIdsProvider flips instantly on tap, before the write lands in
+  // Supabase (see DoneHabitIds.toggleDone). If we only trusted storedDayKeys,
+  // stats would lag a beat behind the checkbox on this same screen. So we
+  // overlay today's optimistic state onto the persisted history, the same
+  // way HabitDetailsScreen already does for the "Last 7 days" strip.
+  final doneHabitIdsAsync = ref.watch(doneHabitIdsProvider);
+  final isDoneToday = doneHabitIdsAsync.valueOrNull?.contains(habitId) ?? false;
+  final today = dayKey(DateTime.now());
+  final dayKeys = isDoneToday
+      ? {...storedDayKeys, today}
+      : storedDayKeys.where((key) => key != today).toSet();
+
+  final totalCheckins = dayKeys.length;
+
+  // Denominator = days since the habit was created (inclusive of today),
+  // since HabitFrequency only ships "daily" right now — every day is a
+  // scheduled day. Once per-weekday scheduling exists this should only
+  // count scheduled days instead.
+  final daysSinceCreation = DateTime.now().difference(createdAt).inDays + 1;
+  final completionRate = daysSinceCreation > 0
+      ? (totalCheckins / daysSinceCreation).clamp(0.0, 1.0)
+      : 0.0;
+
+  return HabitStats(
+    currentStreak: calculateStreak(dayKeys),
+    bestStreak: calculateBestStreak(dayKeys),
+    totalCheckins: totalCheckins,
+    completionRate: completionRate,
+    dayKeys: dayKeys,
+  );
 }
 
 //* FOR ISAR

@@ -43,4 +43,14 @@ class AuthService {
   Future<void> resendLink(String email) async {
     await _supabase.auth.resend(type: OtpType.signup, email: email);
   }
+
+  // The client SDK can't delete its own auth user directly — that needs
+  // elevated privileges. This assumes a `delete_user` Postgres function
+  // (SECURITY DEFINER, deletes auth.users for the calling uid()) is set up
+  // on the Supabase project, which is the standard pattern for self-serve
+  // account deletion.
+  Future<void> deleteAccount() async {
+    await _supabase.rpc('delete_user');
+    await _supabase.auth.signOut();
+  }
 }

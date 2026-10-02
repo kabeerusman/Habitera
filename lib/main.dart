@@ -5,6 +5,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habitera/common/theme/app_theme_data.dart';
 import 'package:habitera/features/auth/presentation/auth_provider.dart';
+import 'package:habitera/features/settings/presentation/settings_provider.dart';
 import 'package:habitera/notification_service.dart';
 // import 'package:habitera/isar_service.dart';
 import 'package:habitera/router/app_router.dart';
@@ -57,11 +58,14 @@ class _MyAppState extends ConsumerState<MyApp> {
   @override
   Widget build(BuildContext context) {
     final router = ref.watch(appRouterProvider);
+    final themeMode = ref.watch(themeModeProvider);
 
     return MaterialApp.router(
       routerConfig: router,
       title: 'Habitera',
       theme: AppThemeData.lightTheme,
+      darkTheme: AppThemeData.darkTheme,
+      themeMode: themeMode,
       debugShowCheckedModeBanner: false,
     );
 

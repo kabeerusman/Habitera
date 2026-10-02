@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 import 'package:habitera/app_provider.dart';
 import 'package:habitera/constants/enums.dart';
+import 'package:habitera/features/auth/presentation/change_password_screen.dart';
 import 'package:habitera/features/auth/presentation/login_screen.dart';
 import 'package:habitera/features/auth/presentation/signup_screen.dart';
 import 'package:habitera/features/habit_tracker/data/models/habit.dart';
@@ -30,6 +31,7 @@ enum AppRoutes {
   chatsScreen('/chats-screen'),
   shopScreen('/shop-screen'),
   profileScreen('/profile-screen'),
+  changePasswordScreen('/change-password-screen'),
   habitDetailsScreen('/habit-details-screen'),
   loginScreen('/login-screen'),
   signupScreen('/signup-screen'),
@@ -199,6 +201,11 @@ GoRouter appRouter(AppRouterRef ref) {
 
               return HabitDetailsScreen(habit: habit);
             },
+          ),
+          GoRoute(
+            name: AppRoutes.changePasswordScreen.name,
+            path: AppRoutes.changePasswordScreen.childPath,
+            builder: (_, _) => const ChangePasswordScreen(),
           ),
         ],
       ),

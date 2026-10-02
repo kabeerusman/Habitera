@@ -53,6 +53,19 @@ class CheckinRepository {
     return doneHabitIdsToday;
   }
 
+  // Unbounded (no date filter), unlike getCheckinDayKeysForHabit below which
+  // only looks at the last 7 days for the "Last 7 days" strip. Best streak,
+  // total check-ins and the consistency grid all need the full history to
+  // be correct, not just a recent window.
+  Future<Set<int>> getAllCheckinDayKeysForHabit(String habitId) async {
+    final checkins = await _supabase
+        .from('habit_checkins')
+        .select()
+        .eq('habit_id', habitId);
+
+    return checkins.map((checkin) => checkin['day_key'] as int).toSet();
+  }
+
   Future<Set<int>> getCheckinDayKeysForHabit(String habitId) async {
     final sevenDaysago = DateTime.now().subtract(Duration(days: 6));
     final startKey = dayKey(sevenDaysago);

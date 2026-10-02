@@ -57,6 +57,7 @@ class HabitRepository {
       'reminder_hour': habit.reminderTime?.hour,
       'reminder_minute': habit.reminderTime?.minute,
       'notification_id': habit.notificationId,
+      'emoji': habit.emoji,
     };
     await _supabase.from('habits').update(editedHabitItems).eq('id', habit.id);
   }

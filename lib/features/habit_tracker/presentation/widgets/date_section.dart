@@ -1,87 +1,72 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:habitera/constants/color_picker.dart';
+import 'package:habitera/features/settings/presentation/settings_provider.dart';
+import 'package:habitera/utils/date_utils.dart';
 import 'package:habitera/utils/extensions.dart';
 import 'package:intl/intl.dart';
 
-class DateSection extends StatelessWidget {
-  DateSection({super.key});
-
-  final today = DateTime.now();
-
-  List<Map<String, String>> generateWeekDates() {
-    List<Map<String, String>> weekDates = [];
-    for (var i = 0; i < 7; i++) {
-      final date = today.add(
-        Duration(days: i - today.weekday + 1), // to get the dates
-      );
-      var weekDay = DateFormat('EEE').format(date); // format Mon
-      var weekDate = DateFormat.d().format(date); // format 30
-
-      weekDates.add({'day': weekDay, 'date': weekDate});
-    }
-    return weekDates;
-  }
+/// The current-week header — design system's DateStrip. Monday/Sunday-first
+/// per the Settings "week starts on" preference.
+class DateSection extends ConsumerWidget {
+  const DateSection({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final weekStart = ref.watch(weekStartProvider);
+    final dayKeys = currentWeekDayKeys(weekStart);
+    final today = dayKey(DateTime.now());
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: List.generate(7, (index) {
-        final dates = generateWeekDates();
-        bool isToday = dates[index]['date'] == today.day.toString();
-        return isToday
-            ? Container(
-                width: 40.0,
-                height: 50.0,
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.black),
-                  borderRadius: BorderRadius.circular(13.0),
-                ),
-                child: DateColumn(dates: dates, index: index),
-              )
-            : DateColumn(dates: dates, index: index);
+        final isToday = dayKeys[index] == today;
+        return DateColumn(dayKeys: dayKeys, index: index, isToday: isToday);
       }),
     );
   }
 }
 
 class DateColumn extends StatelessWidget {
-  const DateColumn({super.key, required this.dates, required this.index});
+  const DateColumn({
+    super.key,
+    required this.dayKeys,
+    required this.index,
+    required this.isToday,
+  });
 
-  final List<Map<String, String>> dates;
+  final List<int> dayKeys;
   final int index;
+  final bool isToday;
 
   @override
   Widget build(BuildContext context) {
-    final labelMediumFSize14 = context.body.copyWith(
-    // final labelMediumFSize14 = context.textTheme.labelMedium?.copyWith(
+    final date = dayKeyToDate(dayKeys[index]);
+    final labelStyle = context.body.copyWith(
       fontSize: 14.0,
+      fontWeight: isToday ? FontWeight.w700 : FontWeight.w400,
+      color: isToday ? ColorPicker.sky800 : null,
     );
-    return Column(
+
+    final column = Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Text(dates[index]['day']!.toLowerCase(), style: labelMediumFSize14),
-        Text('${dates[index]['date']}', style: labelMediumFSize14),
+        Text(DateFormat('EEE').format(date).toLowerCase(), style: labelStyle),
+        Text('${date.day}', style: labelStyle),
       ],
+    );
+
+    if (!isToday) return column;
+
+    return Container(
+      width: 40.0,
+      height: 50.0,
+      decoration: BoxDecoration(
+        color: ColorPicker.sky50,
+        border: Border.all(color: ColorPicker.sky400, width: 1.5),
+        borderRadius: BorderRadius.circular(12.0),
+      ),
+      child: column,
     );
   }
 }
-// class DateColumn extends StatelessWidget {
-//   const DateColumn({super.key, required this.dates, required this.index});
-
-//   final List<Map<String, String>> dates;
-//   final int index;
-
-//   @override
-//   Widget build(BuildContext context) {
-//     final labelMediumFSize14 = context.textTheme.labelMedium!.copyWith(
-//       fontSize: 14.0,
-//     );
-//     return Column(
-//       mainAxisAlignment: MainAxisAlignment.center,
-//       children: [
-//         Text(dates[index]['day']!.toLowerCase(), style: labelMediumFSize14),
-//         Text('${dates[index]['date']}', style: labelMediumFSize14),
-//       ],
-//     );
-//   }
-// }

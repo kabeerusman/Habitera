@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:habitera/constants/color_picker.dart';
 import 'package:habitera/utils/extensions.dart';
 
 class TypeChip extends StatelessWidget {
@@ -8,25 +9,21 @@ class TypeChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isHabitType = type == 0;
-    final label = isHabitType ? 'START' : 'BREAK';
+    final isStart = type == 0;
+    final bg = isStart ? ColorPicker.chipStartBg : ColorPicker.chipBreakBg;
+    final fg = isStart ? ColorPicker.chipStartText : ColorPicker.chipBreakText;
+    final label = isStart ? 'START' : 'BREAK';
 
-    // final bg = isHabitType ?
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-      decoration: BoxDecoration(
-        color: Colors.blueGrey.shade100,
-        borderRadius: BorderRadius.circular(50),
-      ),
+      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(50)),
       child: Text(
         label,
         style: context.small.copyWith(
+          color: fg,
           letterSpacing: 0.6,
           fontWeight: FontWeight.w900,
         ),
-        // style: context.textTheme.labelSmall?.copyWith(
-        //   letterSpacing: 0.6,
-        // ),
       ),
     );
   }

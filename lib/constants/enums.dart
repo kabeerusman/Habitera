@@ -32,6 +32,21 @@ enum HabitFrequency {
 
 enum HabitMenuAction { edit, delete }
 
+enum WeekStart {
+  monday('Monday'),
+  sunday('Sunday');
+
+  final String label;
+  const WeekStart(this.label);
+}
+
+/// Habit identity emoji choices — design/Habitera Design System handoff README.
+const kHabitEmojiChoices = [
+  '✨', '🍎', '📖', '🏃', '💧', '🧘', '💊', '🛏️', '🚭', '🍩', '📵', '🎯',
+];
+
+const kDefaultHabitEmoji = '✨';
+
 //* For testing purposes
   // static Greeting get current {
   //   final now = DateTime.now();

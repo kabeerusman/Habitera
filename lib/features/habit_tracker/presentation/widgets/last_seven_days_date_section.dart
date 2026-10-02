@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:habitera/constants/color_picker.dart';
 import 'package:habitera/constants/sizes.dart';
-import 'package:habitera/features/habit_tracker/presentation/habit_provider.dart';
+import 'package:habitera/features/settings/presentation/settings_provider.dart';
 
 import 'package:habitera/utils/date_utils.dart';
 import 'package:habitera/utils/extensions.dart';
 import 'package:intl/intl.dart';
 
-class LastSevenDaysDateSection extends StatelessWidget {
+/// The "Last 7 days" row on habit details — design system's WeekProgress.
+/// Shows the current calendar week, first day picked by the Settings
+/// "week starts on" preference, so it reorders alongside DateStrip.
+class LastSevenDaysDateSection extends ConsumerWidget {
   const LastSevenDaysDateSection({
     super.key,
     required this.checkinDayKeysForHabit,
@@ -15,21 +19,16 @@ class LastSevenDaysDateSection extends StatelessWidget {
 
   final Set<int> checkinDayKeysForHabit;
 
-  List<int> generateLastSevendays() {
-    final today = DateTime.now();
-    return List.generate(7, (i) {
-      final date = today.subtract(Duration(days: i));
-      return dayKey(date);
-    }).reversed.toList();
-  }
-
   @override
-  Widget build(BuildContext context) {
-    final dates = generateLastSevendays();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final weekStart = ref.watch(weekStartProvider);
+    final dates = currentWeekDayKeys(weekStart);
+    final today = dayKey(DateTime.now());
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: List.generate(7, (index) {
-        final isToday = index == 6;
+        final isToday = dates[index] == today;
         final isDone = checkinDayKeysForHabit.contains(dates[index]);
 
         return DetailsDateColumn(
@@ -59,15 +58,10 @@ class DetailsDateColumn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final labelMediumFSize14 = context.body.copyWith(
-      // final labelMediumFSize14 = context.textTheme.labelMedium!.copyWith(
-      fontSize: 14.0,
-    );
     final date = dayKeyToDate(dates[index]);
 
     var weekDay = DateFormat('EEE').format(date);
     var dayNumber = date.day;
-    // DateFormat.d().format(date)
 
     return Column(
       children: [
@@ -76,19 +70,20 @@ class DetailsDateColumn extends StatelessWidget {
           height: 40.0,
           decoration: isToday
               ? BoxDecoration(
-                  border: Border.all(color: Colors.black),
-                  borderRadius: BorderRadius.circular(13.0),
+                  color: ColorPicker.sky50,
+                  border: Border.all(color: ColorPicker.sky400, width: 1.5),
+                  borderRadius: BorderRadius.circular(12.0),
                 )
               : null,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
-
             children: [
               Text(
                 weekDay.toLowerCase(),
                 style: context.small.copyWith(
                   fontSize: 14.0,
                   fontWeight: isToday ? FontWeight.w700 : FontWeight.w400,
+                  color: isToday ? ColorPicker.sky800 : null,
                 ),
               ),
               Text(
@@ -96,13 +91,22 @@ class DetailsDateColumn extends StatelessWidget {
                 style: context.small.copyWith(
                   fontSize: 14.0,
                   fontWeight: isToday ? FontWeight.w700 : FontWeight.w400,
+                  color: isToday ? ColorPicker.sky800 : null,
                 ),
               ),
             ],
           ),
         ),
         kSizedBoxH10,
-        Icon(isDone ? Icons.circle : Icons.circle_outlined, size: 15),
+        Container(
+          width: 14,
+          height: 14,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: isDone ? ColorPicker.success : Colors.transparent,
+            border: isDone ? null : Border.all(color: ColorPicker.ink200),
+          ),
+        ),
       ],
     );
   }
