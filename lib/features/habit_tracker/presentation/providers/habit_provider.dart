@@ -17,22 +17,55 @@ class Habits extends _$Habits {
     return await _repo.getHabits();
   }
 
+  // Future<Habit> addHabit(Habit habit) async {
+  //   final current = state.value ?? [];
+  //   state = AsyncData([...current, habit]);
+  //   final addedHabit = await _repo.addHabit(habit);
+  //   return addedHabit;
+  //   // ref.invalidateSelf();
+  // }
   Future<Habit> addHabit(Habit habit) async {
-    final current = state.value ?? [];
-    state = AsyncData([...current, habit]);
-    final addedHabit = await _repo.addHabit(habit);
-    return addedHabit;
-    // ref.invalidateSelf();
+  final previousState = state; // saved so we can undo
+  final current = state.value ?? [];
+  state = AsyncData([...current, habit]);
+  try {
+    final added = await _repo.addHabit(habit);
+    // ------------- Replace the local copy with what the server returned,
+    // so state and database agree (e.g. if the server sets the id).
+    state = AsyncData([
+      for (final h in state.value ?? <Habit>[]) h.id == habit.id ? added : h,
+    ]);
+    // -------------
+    return added;
+  } catch (e) {
+    state = previousState; // undo the optimistic add
+    rethrow; // let the screen show an error
   }
+}
 
+  // Future<Habit> restoreDeletedHabit(Habit habit, int index) async {
+  //   final current = state.value ?? [];
+  //   var newList = [...current];
+  //   newList.insert(index, habit);
+  //   state = AsyncData(newList);
+
+  //   final restoredHabit = await _repo.addHabit(habit);
+  //   return restoredHabit;
+  // }
   Future<Habit> restoreDeletedHabit(Habit habit, int index) async {
-    final current = state.value ?? [];
-    var newList = [...current];
-    newList.insert(index, habit);
+    final previousState = state; // saved so we can undo
+    final newList = [...(state.value ?? <Habit>[])];
+    // clamp: if other habits were deleted meanwhile, the old index could be
+    // past the end of the list and insert() would throw.
+    newList.insert(index.clamp(0, newList.length), habit);
     state = AsyncData(newList);
 
-    final restoredHabit = await _repo.addHabit(habit);
-    return restoredHabit;
+    try {
+      return await _repo.addHabit(habit);
+    } catch (e) {
+      state = previousState; // the restore failed, so remove it from the UI
+      rethrow;
+    }
   }
 
   Future<void> editHabit(Habit habitToEdit) async {
@@ -82,16 +115,33 @@ class DoneHabitIds extends _$DoneHabitIds {
     return await _repo.doneHabitIdsToday();
   }
 
+  // Future<void> toggleDone(String habitId) async {
+  //   final current = state.value ?? {};
+  //   final exists = current.contains(habitId);
+  //   final newSet = exists
+  //       ? current.where((id) => id != habitId).toSet()
+  //       : {...current, habitId};
+  //   state = AsyncData(newSet);
+  //   print('Done Habit Ids Today: ${state.value}');
+  //   await _repo.toggleDone(habitId);
+  //   // ref.invalidateSelf();
+  // }
   Future<void> toggleDone(String habitId) async {
     final current = state.value ?? {};
+    final previousState = state; // saved so we can undo
     final exists = current.contains(habitId);
-    final newSet = exists
-        ? current.where((id) => id != habitId).toSet()
-        : {...current, habitId};
-    state = AsyncData(newSet);
-    print('Done Habit Ids Today: ${state.value}');
-    await _repo.toggleDone(habitId);
-    // ref.invalidateSelf();
+    state = AsyncData(
+      exists
+          ? current.where((id) => id != habitId).toSet()
+          : {...current, habitId},
+    );
+    try {
+      await _repo.toggleDone(habitId);
+    } catch (e) {
+      // The write failed, so put the checkbox back to what the DB has.
+      state = previousState;
+      rethrow; // lets the screen show an error later
+    }
   }
 }
 
@@ -127,22 +177,36 @@ class HabitStats {
   final Set<int> dayKeys;
 }
 
+// fetches stored check-ins once per habit. It doesn't
+// watch doneHabitIdsProvider, so toggling a habit never re-runs this query.
+@riverpod
+Future<Set<int>> storedDayKeys(StoredDayKeysRef ref, String habitId) {
+  return ref
+      .read(checkinRepositoryProvider)
+      .getAllCheckinDayKeysForHabit(habitId);
+}
+// -------------
+
 @riverpod
 Future<HabitStats> habitStats(
   HabitStatsRef ref,
   String habitId,
   DateTime createdAt,
 ) async {
-  final repo = ref.read(checkinRepositoryProvider);
-  final storedDayKeys = await repo.getAllCheckinDayKeysForHabit(habitId);
+  // reads the cached keys instead of hitting
+  // Supabase. On a toggle this resolves almost instantly.
+  final storedDayKeys = await ref.watch(storedDayKeysProvider(habitId).future);
+  // -------------
 
-  // doneHabitIdsProvider flips instantly on tap, before the write lands in
-  // Supabase (see DoneHabitIds.toggleDone). If we only trusted storedDayKeys,
-  // stats would lag a beat behind the checkbox on this same screen. So we
-  // overlay today's optimistic state onto the persisted history, the same
-  // way HabitDetailsScreen already does for the "Last 7 days" strip.
-  final doneHabitIdsAsync = ref.watch(doneHabitIdsProvider);
-  final isDoneToday = doneHabitIdsAsync.valueOrNull?.contains(habitId) ?? false;
+  //  select so only this habit's own toggle
+  //  triggers a recalculation (the fix from earlier)
+  final isDoneToday = ref.watch(
+    doneHabitIdsProvider.select(
+      (async) => async.valueOrNull?.contains(habitId) ?? false,
+    ),
+  );
+  // -------------
+
   final today = dayKey(DateTime.now());
   final dayKeys = isDoneToday
       ? {...storedDayKeys, today}

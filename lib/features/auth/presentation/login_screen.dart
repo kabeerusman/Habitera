@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:habitera/constants/color_picker.dart';
 import 'package:habitera/constants/sizes.dart';
 import 'package:habitera/constants/texts.dart';
 import 'package:habitera/features/auth/presentation/widgets/auth_bottom_section.dart';
@@ -36,8 +37,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     print('is now on Login Screen');
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: Colors.white,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
@@ -47,9 +49,26 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               child: Column(
                 children: [
                   SizedBox(height: 12),
-                  Text(
-                    appName,
-                    style: context.screenTitle.copyWith(fontSize: 26),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    spacing: 8,
+                    children: [
+                      Container(
+                        height: 35,
+                        width: 35,
+                        clipBehavior: Clip.antiAlias,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          color: Colors.red,
+                        ),
+                        child: Image.asset('assets/habitera_icon.png'),
+                      ),
+
+                      Text(
+                        appName,
+                        style: context.screenTitle.copyWith(fontSize: 26),
+                      ),
+                    ],
                   ),
                   kSizedBoxH85,
                   Align(
@@ -124,7 +143,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                   );
                                   await authService.signInWithEmailPassword(
                                     _emailController.text,
-                                    _passwordController.text,
+                                  _passwordController.text,
                                   );
                                 } catch (error) {
                                   var message =
@@ -145,7 +164,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                   }
                                 } finally {
                                   setState(() {
-                                    _isLoading = false;
+                                    // _isLoading = false;
+                                    if (mounted) {
+                                      setState(() => _isLoading = false);
+                                    }
                                   });
                                   // print(ref.read(isLoggedInProvider));
                                 }
@@ -153,7 +175,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               }
                               return;
                             },
-                      style: ElevatedButton.styleFrom(shape: StadiumBorder()),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: isDark
+                            ? ColorPicker.sky600
+                            : ColorPicker.ink900,
+                        foregroundColor: isDark
+                            ? ColorPicker.darkTextTitle
+                            : ColorPicker.white,
+                        shape: StadiumBorder(),
+                      ),
                       child: _isLoading
                           ? AuthCircularProgress()
                           : Text('Login'),

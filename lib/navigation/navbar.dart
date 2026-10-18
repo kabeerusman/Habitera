@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:habitera/constants/color_picker.dart';
 import 'package:habitera/features/habit_tracker/presentation/habits_screen.dart';
 import 'package:habitera/features/habit_tracker/presentation/settings_screen.dart';
 import 'package:habitera/features/habit_tracker/presentation/today_screen.dart';
@@ -21,10 +22,7 @@ class _NavBarState extends State<NavBar> {
       selectedIcon: Icon(Icons.check_circle_rounded),
       label: 'Today',
     ),
-    NavigationDestination(
-      icon: Icon(Icons.checklist_rounded),
-      label: 'Habits',
-    ),
+    NavigationDestination(icon: Icon(Icons.checklist_rounded), label: 'Habits'),
     NavigationDestination(
       icon: Icon(Icons.settings_outlined),
       selectedIcon: Icon(Icons.settings_rounded),
@@ -34,6 +32,8 @@ class _NavBarState extends State<NavBar> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
       // Each screen owns its own Scaffold/FAB (the FAB is Today-only in v2;
       // Habits gets a header add-icon-button instead), so this outer
@@ -41,7 +41,13 @@ class _NavBarState extends State<NavBar> {
       body: _screens[_currentIndex],
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          border: Border(top: BorderSide(color: Colors.grey.shade300)),
+          border: Border(
+            top: BorderSide(
+              color: isDark
+                  ? ColorPicker.darkBorderSubtle
+                  : Colors.grey.shade300,
+            ),
+          ),
         ),
         child: NavigationBar(
           selectedIndex: _currentIndex,

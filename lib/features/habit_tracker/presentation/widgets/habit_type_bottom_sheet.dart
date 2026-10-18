@@ -11,9 +11,11 @@ class HabitTypeBottomSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       decoration: BoxDecoration(
-        color: ColorPicker.white,
+        color: isDark ? ColorPicker.darkBorderDefault : ColorPicker.white,
         borderRadius: BorderRadius.circular(30.0),
       ),
       height: 250,
@@ -24,12 +26,24 @@ class HabitTypeBottomSheet extends StatelessWidget {
           Text('Add a Habit', style: context.sectionTitle),
           kSizedBoxH20,
           ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: isDark ? ColorPicker.sky600 : ColorPicker.ink900,
+              foregroundColor: isDark
+                  ? ColorPicker.darkTextTitle
+                  : ColorPicker.white,
+            ),
             onPressed: () => context.pop(HabitType.startHabit),
             child: Text('Start a Habit'),
           ),
           Text('(e.g. Exercise, Read, Wake up early)'),
           kSizedBoxH15,
           ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: isDark ? ColorPicker.sky600 : ColorPicker.ink900,
+              foregroundColor: isDark
+                  ? ColorPicker.darkTextTitle
+                  : ColorPicker.white,
+            ),
             onPressed: () => context.pop(HabitType.breakHabit),
             child: Text('Break a Habit'),
           ),

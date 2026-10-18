@@ -189,7 +189,135 @@ class _CheckinDayKeysForHabitProviderElement
   String get habitId => (origin as CheckinDayKeysForHabitProvider).habitId;
 }
 
-String _$habitStatsHash() => r'aeb0b35577211ddb60fe57cef901cad023ac54b9';
+String _$storedDayKeysHash() => r'55a51200bbb90e5db4741c4e4986f93d3b073e1c';
+
+/// See also [storedDayKeys].
+@ProviderFor(storedDayKeys)
+const storedDayKeysProvider = StoredDayKeysFamily();
+
+/// See also [storedDayKeys].
+class StoredDayKeysFamily extends Family<AsyncValue<Set<int>>> {
+  /// See also [storedDayKeys].
+  const StoredDayKeysFamily();
+
+  /// See also [storedDayKeys].
+  StoredDayKeysProvider call(
+    String habitId,
+  ) {
+    return StoredDayKeysProvider(
+      habitId,
+    );
+  }
+
+  @override
+  StoredDayKeysProvider getProviderOverride(
+    covariant StoredDayKeysProvider provider,
+  ) {
+    return call(
+      provider.habitId,
+    );
+  }
+
+  static const Iterable<ProviderOrFamily>? _dependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
+
+  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
+      _allTransitiveDependencies;
+
+  @override
+  String? get name => r'storedDayKeysProvider';
+}
+
+/// See also [storedDayKeys].
+class StoredDayKeysProvider extends AutoDisposeFutureProvider<Set<int>> {
+  /// See also [storedDayKeys].
+  StoredDayKeysProvider(
+    String habitId,
+  ) : this._internal(
+          (ref) => storedDayKeys(
+            ref as StoredDayKeysRef,
+            habitId,
+          ),
+          from: storedDayKeysProvider,
+          name: r'storedDayKeysProvider',
+          debugGetCreateSourceHash:
+              const bool.fromEnvironment('dart.vm.product')
+                  ? null
+                  : _$storedDayKeysHash,
+          dependencies: StoredDayKeysFamily._dependencies,
+          allTransitiveDependencies:
+              StoredDayKeysFamily._allTransitiveDependencies,
+          habitId: habitId,
+        );
+
+  StoredDayKeysProvider._internal(
+    super._createNotifier, {
+    required super.name,
+    required super.dependencies,
+    required super.allTransitiveDependencies,
+    required super.debugGetCreateSourceHash,
+    required super.from,
+    required this.habitId,
+  }) : super.internal();
+
+  final String habitId;
+
+  @override
+  Override overrideWith(
+    FutureOr<Set<int>> Function(StoredDayKeysRef provider) create,
+  ) {
+    return ProviderOverride(
+      origin: this,
+      override: StoredDayKeysProvider._internal(
+        (ref) => create(ref as StoredDayKeysRef),
+        from: from,
+        name: null,
+        dependencies: null,
+        allTransitiveDependencies: null,
+        debugGetCreateSourceHash: null,
+        habitId: habitId,
+      ),
+    );
+  }
+
+  @override
+  AutoDisposeFutureProviderElement<Set<int>> createElement() {
+    return _StoredDayKeysProviderElement(this);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is StoredDayKeysProvider && other.habitId == habitId;
+  }
+
+  @override
+  int get hashCode {
+    var hash = _SystemHash.combine(0, runtimeType.hashCode);
+    hash = _SystemHash.combine(hash, habitId.hashCode);
+
+    return _SystemHash.finish(hash);
+  }
+}
+
+mixin StoredDayKeysRef on AutoDisposeFutureProviderRef<Set<int>> {
+  /// The parameter `habitId` of this provider.
+  String get habitId;
+}
+
+class _StoredDayKeysProviderElement
+    extends AutoDisposeFutureProviderElement<Set<int>> with StoredDayKeysRef {
+  _StoredDayKeysProviderElement(super.provider);
+
+  @override
+  String get habitId => (origin as StoredDayKeysProvider).habitId;
+}
+
+String _$habitStatsHash() => r'03a94679fe73f9f57b8351203e83d04c428ad87b';
 
 /// See also [habitStats].
 @ProviderFor(habitStats)

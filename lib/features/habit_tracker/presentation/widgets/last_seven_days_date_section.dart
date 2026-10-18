@@ -63,6 +63,8 @@ class DetailsDateColumn extends StatelessWidget {
     var weekDay = DateFormat('EEE').format(date);
     var dayNumber = date.day;
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Column(
       children: [
         Container(
@@ -70,8 +72,16 @@ class DetailsDateColumn extends StatelessWidget {
           height: 40.0,
           decoration: isToday
               ? BoxDecoration(
-                  color: ColorPicker.sky50,
-                  border: Border.all(color: ColorPicker.sky400, width: 1.5),
+                  // color: ColorPicker.sky50,
+                  color: isDark
+                      ? ColorPicker.sky800.withValues(alpha: 0.5)
+                      : ColorPicker.sky50,
+                  border: Border.all(
+                    color: isDark
+                        ? ColorPicker.sky400.withValues(alpha: 0.7)
+                        : ColorPicker.sky400,
+                    width: 1.5,
+                  ),
                   borderRadius: BorderRadius.circular(12.0),
                 )
               : null,
@@ -83,7 +93,9 @@ class DetailsDateColumn extends StatelessWidget {
                 style: context.small.copyWith(
                   fontSize: 14.0,
                   fontWeight: isToday ? FontWeight.w700 : FontWeight.w400,
-                  color: isToday ? ColorPicker.sky800 : null,
+                  color: isToday
+                      ? (isDark ? ColorPicker.sky50 : ColorPicker.sky800)
+                      : null,
                 ),
               ),
               Text(
@@ -91,7 +103,9 @@ class DetailsDateColumn extends StatelessWidget {
                 style: context.small.copyWith(
                   fontSize: 14.0,
                   fontWeight: isToday ? FontWeight.w700 : FontWeight.w400,
-                  color: isToday ? ColorPicker.sky800 : null,
+                  color: isToday
+                      ? (isDark ? ColorPicker.sky50 : ColorPicker.sky800)
+                      : null,
                 ),
               ),
             ],

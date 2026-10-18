@@ -5,7 +5,12 @@ import 'package:habitera/utils/extensions.dart';
 /// A single big-number statistic on the habit-details screen.
 /// design/Habitera Design System/components/today/StatCard.jsx
 class StatCard extends StatelessWidget {
-  const StatCard({super.key, required this.value, required this.label, this.emoji});
+  const StatCard({
+    super.key,
+    required this.value,
+    required this.label,
+    this.emoji,
+  });
 
   final String value;
   final String label;
@@ -13,12 +18,18 @@ class StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? ColorPicker.darkSurfaceCard : ColorPicker.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: ColorPicker.ink100),
+        border: Border.all(
+          color: isDark
+              ? const Color.fromARGB(255, 56, 56, 56)
+              : ColorPicker.ink100,
+        ),
         boxShadow: [
           BoxShadow(
             color: const Color(0xFF101620).withValues(alpha: 0.06),
@@ -39,7 +50,11 @@ class StatCard extends StatelessWidget {
           Text(
             label,
             textAlign: TextAlign.center,
-            style: context.small.copyWith(color: ColorPicker.ink500),
+            style: context.small.copyWith(
+              fontSize: 14,
+
+              color: isDark ? ColorPicker.ink400 : ColorPicker.ink500,
+            ),
           ),
         ],
       ),

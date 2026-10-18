@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habitera/constants/enums.dart';
 import 'package:habitera/constants/texts.dart';
-import 'package:habitera/features/habit_tracker/presentation/habit_provider.dart';
+import 'package:habitera/features/habit_tracker/presentation/providers/habit_provider.dart';
 import 'package:habitera/notification_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

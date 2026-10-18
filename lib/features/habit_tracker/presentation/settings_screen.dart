@@ -96,7 +96,7 @@ class SettingsScreen extends ConsumerWidget {
                               overflow: TextOverflow.ellipsis,
                               style: context.body.copyWith(
                                 fontWeight: FontWeight.w700,
-                                fontSize: 16,
+                                fontSize: 18,
                                 color: titleColor,
                               ),
                             ),
@@ -104,7 +104,10 @@ class SettingsScreen extends ConsumerWidget {
                             Text(
                               email,
                               overflow: TextOverflow.ellipsis,
-                              style: context.small.copyWith(color: mutedColor),
+                              style: context.small.copyWith(
+                                fontSize: 14,
+                                color: mutedColor,
+                              ),
                             ),
                           ],
                         ),
@@ -208,9 +211,18 @@ class SettingsScreen extends ConsumerWidget {
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: dark
-                            ? ColorPicker.darkActionQuiet
-                            : ColorPicker.ink100,
-                        foregroundColor: titleColor,
+                            ? ColorPicker.sky600
+                            : ColorPicker.ink900,
+                        foregroundColor: dark
+                            ? ColorPicker.darkTextTitle
+                            : ColorPicker.white,
+
+                        // backgroundColor: dark
+                        //     ? ColorPicker.darkActionQuiet
+                        //     : ColorPicker.ink900,
+                        // foregroundColor: dark
+                        //     ? ColorPicker.darkTextTitle
+                        //     : ColorPicker.white,
                         elevation: 0,
                         shadowColor: Colors.transparent,
                         shape: RoundedRectangleBorder(
@@ -316,28 +328,260 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
+  //   Future<void> _confirmDeleteAccount(
+  //     BuildContext context,
+  //     WidgetRef ref,
+  //   ) async {
+  //     final confirmed = await showDialog<bool>(
+  //       context: context,
+  //       builder: (dialogContext) => AlertDialog(
+  //         backgroundColor: ColorPicker.white,
+  //         title: const Text('Delete account'),
+  //         content: const Text(
+  //           'This permanently deletes your account and all your habits. This cannot be undone.',
+  //         ),
+  //         actions: [
+  //           TextButton(
+  //             onPressed: () => Navigator.of(dialogContext).pop(false),
+  //             child: const Text('Cancel'),
+  //           ),
+  //           TextButton(
+  //             onPressed: () => Navigator.of(dialogContext).pop(true),
+  //             style: TextButton.styleFrom(foregroundColor: ColorPicker.danger),
+  //             child: const Text('Delete'),
+  //           ),
+  //         ],
+  //       ),
+  //     );
+
+  //     if (confirmed != true || !context.mounted) return;
+
+  //     final messenger = ScaffoldMessenger.of(context);
+  //     try {
+  //       await ref.read(authServiceProvider).deleteAccount();
+  //     } catch (_) {
+  //       messenger.showSnackBar(
+  //         const SnackBar(content: Text('Something went wrong. Try again')),
+  //       );
+  //     }
+  //   }
+  // }
+  // Future<void> _confirmDeleteAccount(
+  //   BuildContext context,
+  //   WidgetRef ref,
+  // ) async {
+  //   final dark = Theme.of(context).brightness == Brightness.dark;
+
+  //   final confirmed = await showDialog<bool>(
+  //     context: context,
+  //     barrierDismissible: false,
+  //     builder: (dialogContext) {
+  //       var isDeleting = false;
+
+  //       // ------------- StatefulBuilder gives the dialog its own setState,
+  //       // so we can swap the buttons for a spinner without making the whole
+  //       // settings screen rebuild.
+  //       return StatefulBuilder(
+  //         builder: (context, setDialogState) => PopScope(
+  //           // Blocks the Android back button while deleting
+  //           canPop: !isDeleting,
+  //           child: AlertDialog(
+  //             backgroundColor: dark
+  //                 ? ColorPicker.darkSurfaceCard
+  //                 : ColorPicker.white,
+  //             shape: RoundedRectangleBorder(
+  //               borderRadius: BorderRadius.circular(20),
+  //             ),
+  //             icon: Container(
+  //               width: 56,
+  //               height: 56,
+  //               decoration: BoxDecoration(
+  //                 shape: BoxShape.circle,
+  //                 color: ColorPicker.danger.withValues(alpha: 0.12),
+  //               ),
+  //               child: const Icon(
+  //                 Icons.delete_outline_rounded,
+  //                 size: 28,
+  //                 color: ColorPicker.danger,
+  //               ),
+  //             ),
+  //             title: Text(
+  //               'Delete account?',
+  //               textAlign: TextAlign.center,
+  //               style: context.screenTitle.copyWith(fontSize: 20),
+  //             ),
+  //             content: Text(
+  //               'This permanently deletes your account and all your habits. This cannot be undone.',
+  //               textAlign: TextAlign.center,
+  //               style: context.body.copyWith(
+  //                 fontSize: 15,
+  //                 color: dark ? ColorPicker.darkTextMuted : ColorPicker.ink500,
+  //               ),
+  //             ),
+  //             actionsPadding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+  //             actions: [
+  //               Row(
+  //                 children: [
+  //                   Expanded(
+  //                     child: OutlinedButton(
+  //                       // null disables the button while deleting
+  //                       onPressed: isDeleting
+  //                           ? null
+  //                           : () => Navigator.of(dialogContext).pop(),
+  //                       style: OutlinedButton.styleFrom(
+  //                         minimumSize: const Size.fromHeight(44),
+  //                         shape: RoundedRectangleBorder(
+  //                           borderRadius: BorderRadius.circular(12),
+  //                         ),
+  //                       ),
+  //                       child: const Text('Cancel'),
+  //                     ),
+  //                   ),
+  //                   const SizedBox(width: 12),
+  //                   Expanded(
+  //                     child: ElevatedButton(
+  //                       onPressed: isDeleting
+  //                           ? null
+  //                           : () async {
+  //                               setDialogState(() => isDeleting = true);
+  //                               try {
+  //                                 await authService.deleteAccount();
+  //                                 // Success: close the dialog. The auth event
+  //                                 // will make the router send them to login.
+  //                                 if (dialogContext.mounted) {
+  //                                   Navigator.of(dialogContext).pop();
+  //                                 }
+  //                               } catch (_) {
+  //                                 // Failure: re-enable the buttons and tell
+  //                                 // the user, so they can retry or cancel.
+  //                                 if (dialogContext.mounted) {
+  //                                   setDialogState(() => isDeleting = false);
+  //                                 }
+  //                                 messenger.showSnackBar(
+  //                                   const SnackBar(
+  //                                     content: Text(
+  //                                       'Something went wrong. Try again',
+  //                                     ),
+  //                                   ),
+  //                                 );
+  //                               }
+  //                             },
+  //                       style: ElevatedButton.styleFrom(
+  //                         backgroundColor: ColorPicker.danger,
+  //                         foregroundColor: Colors.white,
+  //                         elevation: 0,
+  //                         minimumSize: const Size.fromHeight(44),
+  //                         shape: RoundedRectangleBorder(
+  //                           borderRadius: BorderRadius.circular(12),
+  //                         ),
+  //                       ),
+  //                       child: isDeleting
+  //                           ? const SizedBox(
+  //                               width: 20,
+  //                               height: 20,
+  //                               child: CircularProgressIndicator(
+  //                                 strokeWidth: 2,
+  //                                 color: Colors.white,
+  //                               ),
+  //                             )
+  //                           : const Text('Delete'),
+  //                     ),
+  //                   ),
+  //                 ],
+  //               ),
+  //             ],
+  //           ),
+  //         ),
+  //       );
+  //     },
+  //   );
+
+  //   if (confirmed != true || !context.mounted) return;
+
+  //   final messenger = ScaffoldMessenger.of(context);
+  //   try {
+  //     await ref.read(authServiceProvider).deleteAccount();
+  //   } catch (_) {
+  //     messenger.showSnackBar(
+  //       const SnackBar(content: Text('Something went wrong. Try again')),
+  //     );
+  //   }
+  // }
   Future<void> _confirmDeleteAccount(
     BuildContext context,
     WidgetRef ref,
   ) async {
+    final dark = Theme.of(context).brightness == Brightness.dark;
+
     final confirmed = await showDialog<bool>(
       context: context,
+      barrierDismissible: false,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Delete account'),
-        content: const Text(
-          'This permanently deletes your account and all your habits. This cannot be undone.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text('Cancel'),
+        backgroundColor: dark ? ColorPicker.darkSurfaceCard : ColorPicker.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        icon: Container(
+          width: 56,
+          height: 56,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: ColorPicker.danger.withValues(alpha: 0.12),
           ),
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            style: TextButton.styleFrom(foregroundColor: ColorPicker.danger),
-            child: const Text('Delete'),
+          child: const Icon(
+            Icons.delete_outline_rounded,
+            size: 28,
+            color: ColorPicker.danger,
+          ),
+        ),
+        // -------------
+        title: Text(
+          'Delete account?',
+          textAlign: TextAlign.center,
+          style: context.screenTitle.copyWith(fontSize: 20),
+        ),
+        content: Text(
+          'This permanently deletes your account and all your habits. This cannot be undone.',
+          textAlign: TextAlign.center,
+          style: context.body.copyWith(
+            fontSize: 15,
+            color: dark ? ColorPicker.darkTextMuted : ColorPicker.ink500,
+          ),
+        ),
+        actionsPadding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+        actions: [
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(false),
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(44),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text('Cancel'),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(true),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: ColorPicker.danger,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    minimumSize: const Size.fromHeight(44),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text('Delete'),
+                ),
+              ),
+            ],
           ),
         ],
+        // -------------
       ),
     );
 
@@ -437,7 +681,7 @@ class _SettingsGroup extends StatelessWidget {
             title.toUpperCase(),
             style: context.small.copyWith(
               fontWeight: FontWeight.w800,
-              fontSize: 11,
+              fontSize: 13,
               letterSpacing: 0.44,
               color: faintColor,
             ),
@@ -575,6 +819,8 @@ class _EditProfileSheetContentState extends State<_EditProfileSheetContent> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -589,6 +835,10 @@ class _EditProfileSheetContentState extends State<_EditProfileSheetContent> {
           child: ElevatedButton(
             onPressed: _isSaving ? null : _save,
             style: ElevatedButton.styleFrom(
+              backgroundColor: isDark
+                  ? ColorPicker.darkActionQuiet
+                  : ColorPicker.ink900,
+              foregroundColor: ColorPicker.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),

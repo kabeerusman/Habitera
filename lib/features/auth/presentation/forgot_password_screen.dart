@@ -30,8 +30,12 @@ class _ForgotpasswordScreenState extends ConsumerState<ForgotpasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      appBar: AppBar(backgroundColor: ColorPicker.white),
+      appBar: AppBar(
+        title: Text('Forgot Password', style: context.screenTitle),
+      ),
       body: Padding(
         padding: padAll16,
         child: Form(
@@ -39,11 +43,11 @@ class _ForgotpasswordScreenState extends ConsumerState<ForgotpasswordScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              Align(
-                alignment: AlignmentGeometry.centerLeft,
-                child: Text('Forgot Password', style: context.screenTitle),
-              ),
-              kSizedBoxH10,
+              // Align(
+              //   alignment: AlignmentGeometry.centerLeft,
+              //   child: Text('Forgot Password', style: context.screenTitle),
+              // ),
+              kSizedBoxH5,
               Align(
                 alignment: AlignmentGeometry.centerLeft,
                 child: Text(
@@ -111,7 +115,16 @@ class _ForgotpasswordScreenState extends ConsumerState<ForgotpasswordScreen> {
                           return;
                         }
                       },
-                style: ElevatedButton.styleFrom(shape: StadiumBorder()),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: isDark
+                      ? ColorPicker.sky600
+                      : ColorPicker.ink900,
+                  foregroundColor: isDark
+                      ? ColorPicker.darkTextTitle
+                      : ColorPicker.white,
+                  shape: StadiumBorder(),
+                ),
+
                 child: _isLoading ? AuthCircularProgress() : Text('Send'),
               ),
             ],

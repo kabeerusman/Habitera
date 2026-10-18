@@ -10,7 +10,7 @@ import 'package:habitera/constants/enums.dart';
 import 'package:habitera/constants/sizes.dart';
 import 'package:habitera/constants/texts.dart';
 import 'package:habitera/features/habit_tracker/data/models/habit.dart';
-import 'package:habitera/features/habit_tracker/presentation/habit_provider.dart';
+import 'package:habitera/features/habit_tracker/presentation/providers/habit_provider.dart';
 import 'package:habitera/features/habit_tracker/presentation/widgets/habit_emoji.dart';
 import 'package:habitera/features/habit_tracker/presentation/widgets/habit_type_bottom_sheet.dart';
 import 'package:habitera/notification_service.dart';
@@ -26,6 +26,8 @@ class HabitsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final habitsAsync = ref.watch(habitsProvider);
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -37,7 +39,10 @@ class HabitsScreen extends ConsumerWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Habits', style: context.screenTitle.copyWith(fontSize: 30)),
+                  Text(
+                    'Habits',
+                    style: context.screenTitle.copyWith(fontSize: 30),
+                  ),
                   SizedBox(
                     width: 40,
                     height: 40,
@@ -45,7 +50,9 @@ class HabitsScreen extends ConsumerWidget {
                       onPressed: () => _openAddHabitFlow(context),
                       icon: const Icon(Icons.add_rounded),
                       style: IconButton.styleFrom(
-                        backgroundColor: ColorPicker.ink50,
+                        backgroundColor: isDark
+                            ? ColorPicker.darkBorderDefault
+                            : ColorPicker.ink50,
                         shape: const CircleBorder(),
                       ),
                     ),
@@ -204,11 +211,17 @@ class _HabitsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? ColorPicker.darkSurfaceCard : ColorPicker.white,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: ColorPicker.ink100),
+        border: Border.all(
+          color: isDark
+              ? const Color.fromARGB(255, 56, 56, 56)
+              : ColorPicker.ink100,
+        ),
         boxShadow: [
           BoxShadow(
             color: const Color(0xFF101620).withValues(alpha: 0.06),
@@ -235,10 +248,10 @@ class _HabitListRow extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final statsAsync = ref.watch(
-      habitStatsProvider(habit.id, habit.createdAt),
-    );
+    final statsAsync = ref.watch(habitStatsProvider(habit.id, habit.createdAt));
     final streak = statsAsync.valueOrNull?.currentStreak ?? 0;
+
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Slidable(
       key: ValueKey(habit.id),
@@ -268,7 +281,13 @@ class _HabitListRow extends ConsumerWidget {
           constraints: const BoxConstraints(minHeight: 44),
           decoration: BoxDecoration(
             border: showDivider
-                ? const Border(top: BorderSide(color: ColorPicker.ink100))
+                ? Border(
+                    top: BorderSide(
+                      color: isDark
+                          ? ColorPicker.darkBorderDefault
+                          : ColorPicker.ink100,
+                    ),
+                  )
                 : null,
           ),
           child: Row(
@@ -286,18 +305,32 @@ class _HabitListRow extends ConsumerWidget {
                       style: context.body.copyWith(
                         fontWeight: FontWeight.w500,
                         fontSize: 16,
+                        color: isDark
+                            ? ColorPicker.darkTextTitle
+                            : ColorPicker.ink900,
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text.rich(
                       TextSpan(
-                        style: context.small.copyWith(color: ColorPicker.ink500),
+                        style: context.small.copyWith(
+                          color: ColorPicker.ink500,
+                        ),
                         children: [
-                          const TextSpan(text: 'Every day'),
+                          TextSpan(
+                            text: 'Every day',
+                            style: TextStyle(
+                              color: isDark
+                                  ? ColorPicker.ink400
+                                  : ColorPicker.ink500,
+                            ),
+                          ),
                           if (streak > 0)
                             TextSpan(
                               text: '  ·  🔥 $streak',
-                              style: const TextStyle(color: ColorPicker.ember600),
+                              style: const TextStyle(
+                                color: ColorPicker.ember600,
+                              ),
                             ),
                         ],
                       ),

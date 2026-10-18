@@ -18,7 +18,8 @@ class TodayRow extends StatefulWidget {
 
   final String emoji;
   final String title;
-  final int streak;
+  final int? streak;
+  // final int streak;
   final bool done;
   final VoidCallback onToggle;
   final VoidCallback? onOpen;
@@ -86,13 +87,19 @@ class _TodayRowState extends State<TodayRow>
   @override
   Widget build(BuildContext context) {
     final done = widget.done;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    // final titleColor = isDark ? ColorPicker.darkTextTitle : ColorPicker.ink900;
 
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? ColorPicker.darkSurfaceCard : ColorPicker.white,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: ColorPicker.ink100),
+        border: Border.all(
+          color: isDark
+              ? const Color.fromARGB(255, 56, 56, 56)
+              : ColorPicker.ink100,
+        ),
         boxShadow: [
           BoxShadow(
             color: const Color(0xFF101620).withValues(alpha: 0.06),
@@ -119,7 +126,12 @@ class _TodayRowState extends State<TodayRow>
                     style: context.body.copyWith(
                       fontWeight: FontWeight.w500,
                       fontSize: 16,
-                      color: done ? ColorPicker.ink500 : ColorPicker.ink900,
+                      color: done
+                          ? ColorPicker.ink500
+                          : (isDark
+                                ? ColorPicker.darkTextTitle
+                                : ColorPicker.ink900),
+                      // color: done ? ColorPicker.ink500 : ColorPicker.ink900,
                       decoration: done
                           ? TextDecoration.lineThrough
                           : TextDecoration.none,
@@ -127,19 +139,49 @@ class _TodayRowState extends State<TodayRow>
                     ),
                   ),
                   const SizedBox(height: 2),
-                  widget.streak > 0
-                      ? Text(
-                          '🔥 ${widget.streak} ${widget.streak == 1 ? 'day' : 'days'}',
-                          style: context.small.copyWith(
-                            color: ColorPicker.ember600,
-                          ),
-                        )
-                      : Text(
-                          'No streak yet',
-                          style: context.small.copyWith(
-                            color: ColorPicker.ink500,
-                          ),
-                        ),
+                  // widget.streak > 0
+                  //     ? Text(
+                  //         '🔥 ${widget.streak} ${widget.streak == 1 ? 'day' : 'days'}',
+                  //         style: context.small.copyWith(
+                  //           // color: ColorPicker.ember600,
+                  //           color: done
+                  //               ? ColorPicker.ember600
+                  //               : (isDark
+                  //                     ? ColorPicker.ink400
+                  //                     : ColorPicker.ink500),
+                  //         ),
+                  //       )
+                  //     : Text(
+                  //         'No streak yet',
+                  //         style: context.small.copyWith(
+                  //           color: isDark
+                  //               ? ColorPicker.ink400
+                  //               : ColorPicker.ink500,
+                  //         ),
+                  //       ),
+                  // ------------- CHANGED: three states instead of two.
+                  // Loading shows an invisible placeholder with the same height, so the row
+                  // doesn't jump in size when the real text arrives.
+                  if (widget.streak == null)
+                    Text(' ', style: context.small)
+                  else if (widget.streak! > 0)
+                    Text(
+                      '🔥 ${widget.streak} ${widget.streak == 1 ? 'day' : 'days'}',
+                      style: context.small.copyWith(
+                        color: done
+                            ? ColorPicker.ember600
+                            : (isDark
+                                  ? ColorPicker.ink400
+                                  : ColorPicker.ink500),
+                      ),
+                    )
+                  else
+                    Text(
+                      'No streak yet',
+                      style: context.small.copyWith(
+                        color: isDark ? ColorPicker.ink400 : ColorPicker.ink500,
+                      ),
+                    ),
                 ],
               ),
             ),
@@ -164,7 +206,7 @@ class _TodayRowState extends State<TodayRow>
                   color: done ? ColorPicker.success : Colors.transparent,
                   border: done
                       ? null
-                      : Border.all(color: ColorPicker.ink200, width: 1.5),
+                      : Border.all(color: ColorPicker.ink500, width: 1.5),
                 ),
                 child: done
                     ? FadeTransition(

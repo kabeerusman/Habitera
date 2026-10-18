@@ -22,12 +22,26 @@ class ProgressBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final pct = max > 0 ? (value / max).clamp(0.0, 1.0) : 0.0;
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: context.body.copyWith(fontWeight: FontWeight.w700, fontSize: 16),
+        Row(
+          // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              label,
+              style: context.body.copyWith(
+                fontWeight: FontWeight.w700,
+                fontSize: 16,
+              ),
+            ),
+            SizedBox(width: 8),
+            if (value == max) const Text('🎉', style: TextStyle(fontSize: 20)),
+
+            // -------------
+          ],
         ),
         const SizedBox(height: 8),
         ClipRRect(
@@ -35,7 +49,7 @@ class ProgressBar extends StatelessWidget {
           child: Container(
             height: height,
             width: double.infinity,
-            color: ColorPicker.ink100,
+            color: isDark ? ColorPicker.darkBorderDefault : ColorPicker.ink100,
             alignment: Alignment.centerLeft,
             child: AnimatedFractionallySizedBox(
               duration: const Duration(milliseconds: 240),

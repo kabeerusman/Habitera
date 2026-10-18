@@ -8,7 +8,7 @@ import 'package:habitera/features/auth/presentation/change_password_screen.dart'
 import 'package:habitera/features/auth/presentation/login_screen.dart';
 import 'package:habitera/features/auth/presentation/signup_screen.dart';
 import 'package:habitera/features/habit_tracker/data/models/habit.dart';
-import 'package:habitera/features/habit_tracker/data/models/habit_isar.dart';
+// import 'package:habitera/features/habit_tracker/data/models/habit_isar.dart';
 import 'package:habitera/features/habit_tracker/presentation/add_habit_screen.dart';
 import 'package:habitera/features/auth/presentation/auth_provider.dart';
 import 'package:habitera/features/auth/presentation/confirm_email_screen.dart';
@@ -84,12 +84,18 @@ GoRouter appRouter(AppRouterRef ref) {
       );
 
       final hasSeenOnboarding =
+          // false;
           ref.read(hasSeenOnboardingProvider).value ?? true;
 
       final onOnboardingScreen =
           state.matchedLocation == AppRoutes.onboardingScreen.path;
 
-      final isLoggedIn = ref.read(isLoggedInProvider);
+      // final isLoggedIn = ref.read(isLoggedInProvider);
+      // ------------- CHANGED: read the session straight from Supabase instead of
+      // a provider. The SDK clears currentSession before it emits the sign-out
+      // event, so this is always correct at the moment redirect runs. A provider
+      // that listens to the same event can lag behind it by a beat.
+      final isLoggedIn = Supabase.instance.client.auth.currentSession != null;
       final isPasswordRecovery = ref.read(isPasswordRecoveryProvider);
 
       final onAuthScreen =

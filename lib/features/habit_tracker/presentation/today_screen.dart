@@ -10,16 +10,15 @@ import 'package:habitera/constants/color_picker.dart';
 import 'package:habitera/constants/enums.dart';
 import 'package:habitera/constants/sizes.dart';
 import 'package:habitera/features/habit_tracker/data/models/habit.dart';
-import 'package:habitera/features/habit_tracker/presentation/habit_provider.dart';
+import 'package:habitera/features/habit_tracker/presentation/providers/habit_provider.dart';
 import 'package:habitera/features/habit_tracker/presentation/widgets/habit_type_bottom_sheet.dart';
 import 'package:habitera/features/habit_tracker/presentation/widgets/progress_bar.dart';
 import 'package:habitera/features/habit_tracker/presentation/widgets/today_row.dart';
 import 'package:habitera/router/app_router.dart';
 import 'package:habitera/utils/extensions.dart';
+import 'package:lottie/lottie.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-/// Home destination (tab 1) — daily check-ins and the day's progress.
-/// design/Habitera Design System/ui_kits/habitera_app_v2/TodayScreen.jsx
 class TodayScreen extends ConsumerStatefulWidget {
   const TodayScreen({super.key});
 
@@ -30,6 +29,8 @@ class TodayScreen extends ConsumerStatefulWidget {
 class _TodayScreenState extends ConsumerState<TodayScreen> {
   late String currentGreeting;
   late Timer timer;
+
+  bool _showConfetti = false;
 
   @override
   void initState() {
@@ -56,85 +57,152 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
   Widget build(BuildContext context) {
     final habitsAsync = ref.watch(habitsProvider);
     final doneHabitIdsAsync = ref.watch(doneHabitIdsProvider);
-    final doneHabitIds = doneHabitIdsAsync.value ?? <String>{};
+    final doneHabitIds = doneHabitIdsAsync.valueOrNull ?? <String>{};
     final user = Supabase.instance.client.auth.currentUser;
-    final name = (user?.userMetadata?['name'] as String?)?.trim();
+    final name = (user?.userMetadata?['name'] as String?)
+        ?.trim()
+        .split(' ')
+        .first;
+
+    // ------------- NEW: fires only when doneHabitIds *changes*
+    ref.listen(doneHabitIdsProvider, (prev, next) {
+      final habits = ref.read(habitsProvider).valueOrNull;
+      final before = prev?.valueOrNull;
+      final after = next.valueOrNull;
+
+      // Bail out if anything hasn't loaded yet. The `before == null` check
+      // matters most: on app launch the provider goes loading -> data, and
+      // without this guard that first load would look like "just finished
+      // everything" and fire confetti on every cold start.
+      if (habits == null || habits.isEmpty || before == null || after == null) {
+        return;
+      }
+
+      bool allDone(Set<String> ids) => habits.every((h) => ids.contains(h.id));
+
+      // Only celebrate the transition not-done -> done, not "still done".
+      if (!allDone(before) && allDone(after)) {
+        setState(() => _showConfetti = true);
+      }
+    });
+    // -------------
+
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 14),
-              Text('Today', style: context.screenTitle.copyWith(fontSize: 30)),
-              const SizedBox(height: 2),
-              Text(
-                name == null || name.isEmpty
-                    ? currentGreeting
-                    : '$currentGreeting, $name',
-                style: context.body.copyWith(
-                  fontWeight: FontWeight.w500,
-                  fontSize: 16,
-                  color: ColorPicker.ink500,
-                ),
-              ),
-              const SizedBox(height: 20),
-              Text(
-                DateFormat('EEEE, MMMM d').format(DateTime.now()).toUpperCase(),
-                style: context.small.copyWith(
-                  fontWeight: FontWeight.w800,
-                  fontSize: 11,
-                  letterSpacing: 0.44,
-                  color: ColorPicker.ink400,
-                ),
-              ),
-              const SizedBox(height: 6),
-              Expanded(
-                child: habitsAsync.when(
-                  data: (habits) {
-                    if (habits.isEmpty) {
-                      return const _TodayEmptyState();
-                    }
-                    final doneCount = habits
-                        .where((h) => doneHabitIds.contains(h.id))
-                        .length;
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        ProgressBar(
-                          value: doneCount,
-                          max: habits.length,
-                          label: '$doneCount of ${habits.length} done',
+      body: Stack(
+        children: [
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 14),
+                  Text(
+                    'Today',
+                    style: context.screenTitle.copyWith(fontSize: 30),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    name == null || name.isEmpty
+                        ? currentGreeting
+                        : '$currentGreeting, $name',
+                    style: context.body.copyWith(
+                      fontWeight: FontWeight.w500,
+                      fontSize: 16,
+                      color: isDark
+                          ? ColorPicker.darkTextTitle
+                          : ColorPicker.ink500,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    children: [
+                      Text(
+                        DateFormat(
+                          'EEEE, MMMM d',
+                        ).format(DateTime.now()).toUpperCase(),
+                        style: context.small.copyWith(
+                          fontWeight: FontWeight.w800,
+                          fontSize: 12,
+                          letterSpacing: 0.44,
+                          color: ColorPicker.ink400,
                         ),
-                        const SizedBox(height: 20),
-                        Expanded(
-                          child: _TodayList(
-                            habits: habits,
-                            doneHabitIds: doneHabitIds,
-                          ),
-                        ),
-                      ],
-                    );
-                  },
-                  error: (error, _) {
-                    final message = error is SocketException
-                        ? 'Please check your internet connection'
-                        : 'Something went wrong. Try again';
-                    return Center(child: Text(message));
-                  },
-                  loading: () =>
-                      const Center(child: CircularProgressIndicator.adaptive()),
-                ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Expanded(
+                    child: habitsAsync.when(
+                      data: (habits) {
+                        if (habits.isEmpty) {
+                          return const _TodayEmptyState();
+                        }
+                        final doneCount = habits
+                            .where((h) => doneHabitIds.contains(h.id))
+                            .length;
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            ProgressBar(
+                              value: doneCount,
+                              max: habits.length,
+                              label: '$doneCount of ${habits.length} done',
+                            ),
+                            const SizedBox(height: 20),
+                            Expanded(
+                              child: _TodayList(
+                                habits: habits,
+                                doneHabitIds: doneHabitIds,
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                      error: (error, _) {
+                        final message = (error is SocketException)
+                            ? 'Please check your internet connection'
+                            : 'Something went wrong. Try again';
+                        return Center(child: Text(message));
+                      },
+                      loading: () => const Center(
+                        child: CircularProgressIndicator.adaptive(),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
-        ),
+          if (_showConfetti)
+            // Positioned.fill covers the whole screen (including under the
+            // status bar), which is why it's outside the SafeArea.
+            Positioned.fill(
+              // IgnorePointer so taps still reach the habit rows underneath
+              child: IgnorePointer(
+                child: Lottie.asset(
+                  'assets/animations/confetti.json',
+                  repeat: false,
+                  fit: BoxFit.cover,
+                  // Remove the widget when the animation ends so it isn't
+                  // left in the tree, and the next completion starts fresh.
+                  onLoaded: (composition) {
+                    Future.delayed(composition.duration, () {
+                      if (mounted) setState(() => _showConfetti = false);
+                    });
+                  },
+                ),
+              ),
+            ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         shape: const CircleBorder(),
-        backgroundColor: ColorPicker.sky400,
+        backgroundColor: isDark
+            ? ColorPicker.sky600
+            // ? ColorPicker.sky400.withValues(alpha: 0.8)
+            : ColorPicker.sky400,
         onPressed: () async {
           final type = await showModalBottomSheet<HabitType>(
             context: context,
@@ -188,14 +256,13 @@ class _TodayList extends ConsumerWidget {
         return TodayRow(
           emoji: habit.emoji,
           title: habit.title,
-          streak: statsAsync.valueOrNull?.currentStreak ?? 0,
+          // streak: statsAsync.valueOrNull?.currentStreak ?? 0,
+          streak: statsAsync.valueOrNull?.currentStreak,
           done: done,
           onToggle: () =>
               ref.read(doneHabitIdsProvider.notifier).toggleDone(habit.id),
-          onOpen: () => context.goNamed(
-            AppRoutes.habitDetailsScreen.name,
-            extra: habit,
-          ),
+          onOpen: () =>
+              context.goNamed(AppRoutes.habitDetailsScreen.name, extra: habit),
         );
       },
     );

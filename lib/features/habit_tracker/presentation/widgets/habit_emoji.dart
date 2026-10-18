@@ -11,19 +11,25 @@ import 'package:habitera/constants/color_picker.dart';
 /// (completion is always shown via the green check, never this colour), so
 /// that's a safe simplification.
 class HabitEmoji extends StatelessWidget {
-  const HabitEmoji({super.key, required this.emoji, this.size = 40});
+  const HabitEmoji({
+    super.key,
+    required this.emoji,
+    this.size = 40,
+  });
 
   final String emoji;
   final double size;
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Container(
       width: size,
       height: size,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: Colors.grey[200],
+        color: isDark ? ColorPicker.darkBorderDefault : Colors.grey[200],
         // color: ColorPicker.sky100,
         shape: BoxShape.circle,
       ),

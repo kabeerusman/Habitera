@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habitera/app_provider.dart';
+import 'package:habitera/constants/color_picker.dart';
 
 import 'package:habitera/constants/sizes.dart';
 import 'package:habitera/utils/extensions.dart';
@@ -19,30 +20,61 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final _pageController = PageController();
   var _currentPageIndex = 0;
 
-  final _pages = [
+  final _pages = const [
     OnboardingPageData(
-      icon: Icon(Icons.track_changes_rounded, size: iconSize),
+      icon: Icons.track_changes_rounded,
       title: 'Track your habits in one place',
       subtitle: 'Stay on top of your goals everyday',
     ),
     OnboardingPageData(
-      icon: Icon(Icons.add_task_rounded, size: iconSize),
+      icon: Icons.add_task_rounded,
       title: 'Build or break habits',
       subtitle: 'Start good habits or eliminate bad ones',
     ),
     OnboardingPageData(
-      icon: Icon(Icons.rocket_launch_rounded, size: iconSize),
+      icon: Icons.rocket_launch_outlined,
       title: 'Get started',
       subtitle: 'Your journey to better habits begins now',
     ),
   ];
 
+  // final _pages = [
+  //   OnboardingPageData(
+  //     icon: Icon(
+  //       Icons.track_changes_rounded,
+  //       size: iconSize,
+  //       color: isDark ? ColorPicker.darkBrand : ColorPicker.sky500,
+  //     ),
+  //     title: 'Track your habits in one place',
+  //     subtitle: 'Stay on top of your goals everyday',
+  //   ),
+  //   OnboardingPageData(
+  //     icon: Icon(
+  //       Icons.add_task_rounded,
+  //       size: iconSize,
+  //       color: isDark ? ColorPicker.darkBrand : ColorPicker.sky500,
+  //     ),
+  //     title: 'Build or break habits',
+  //     subtitle: 'Start good habits or eliminate bad ones',
+  //   ),
+  //   OnboardingPageData(
+  //     icon: Icon(
+  //       Icons.rocket_launch_rounded,
+  //       size: iconSize,
+  //       color: isDark ? ColorPicker.darkBrand : ColorPicker.sky500,
+  //     ),
+  //     title: 'Get started',
+  //     subtitle: 'Your journey to better habits begins now',
+  //   ),
+  // ];
+
   @override
   Widget build(BuildContext context) {
     bool isLastPage = _currentPageIndex == _pages.length - 1;
+
     return Scaffold(
       body: PageView.builder(
-        itemCount: 3,
+        itemCount: _pages.length,
         controller: _pageController,
         onPageChanged: (index) {
           setState(() {
@@ -88,38 +120,56 @@ class OnboardingBottomSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         Row(
-          spacing: 20,
+          spacing: 12,
           mainAxisAlignment: MainAxisAlignment.center,
           children: List.generate(_pages.length, (i) {
+            final isCurrentPage = _currentPageIndex == i;
             return Container(
-              width: 8,
+              width: isCurrentPage ? 24 : 8,
               height: 8,
               decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: _currentPageIndex == i ? Colors.black : Colors.grey,
+                // shape: BoxShape.circle,
+                color: isCurrentPage ? ColorPicker.sky500 : Colors.grey,
+                borderRadius: BorderRadius.circular(4),
               ),
             );
           }),
         ),
         kSizedBoxH20,
-        ElevatedButton(
-          onPressed: isLastPage
-              ? () {
-                  ref
-                      .read(hasSeenOnboardingProvider.notifier)
-                      .completeOnboarding();
-                }
-              : () {
-                  _pageController.nextPage(
-                    duration: Duration(milliseconds: 300),
-                    curve: Curves.easeInOut,
-                  );
-                },
-          child: Text(isLastPage ? 'Get started' : 'Next'),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: isDark
+                    ? ColorPicker.sky600
+                    : ColorPicker.ink900,
+                foregroundColor: isDark
+                    ? ColorPicker.darkTextTitle
+                    : ColorPicker.white,
+              ),
+              onPressed: isLastPage
+                  ? () {
+                      ref
+                          .read(hasSeenOnboardingProvider.notifier)
+                          .completeOnboarding();
+                    }
+                  : () {
+                      _pageController.nextPage(
+                        duration: Duration(milliseconds: 300),
+                        curve: Curves.easeInOut,
+                      );
+                    },
+              child: Text(isLastPage ? 'Get started' : 'Next'),
+            ),
+          ),
         ),
       ],
     );
@@ -133,6 +183,8 @@ class OnboardingBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -140,10 +192,15 @@ class OnboardingBody extends StatelessWidget {
         Container(
           padding: EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: Colors.grey.shade100,
+            color: isDark ? ColorPicker.darkBrandTint : ColorPicker.sky100,
+            // color: Colors.grey.shade100,
             borderRadius: BorderRadius.circular(24),
           ),
-          child: onboardingPageData.icon,
+          child: Icon(
+            onboardingPageData.icon,
+            size: iconSize,
+            color: isDark ? ColorPicker.darkBrand : ColorPicker.sky500,
+          ),
         ),
         kSizedBoxH15,
         Text(
@@ -164,12 +221,12 @@ class OnboardingBody extends StatelessWidget {
 }
 
 class OnboardingPageData {
-  OnboardingPageData({
+  const OnboardingPageData({
     required this.icon,
     required this.title,
     required this.subtitle,
   });
-  final Icon icon;
+  final IconData icon;
   final String title;
   final String subtitle;
 }

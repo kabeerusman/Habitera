@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:habitera/constants/color_picker.dart';
 import 'package:habitera/constants/sizes.dart';
 import 'package:habitera/constants/texts.dart';
 import 'package:habitera/features/auth/presentation/auth_provider.dart';
@@ -37,6 +38,8 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
       // appBar: AppBar(),
       body: SafeArea(
@@ -47,9 +50,26 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
             child: SingleChildScrollView(
               child: Column(
                 children: [
-                  Text(
-                    appName,
-                    style: context.screenTitle.copyWith(fontSize: 26),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    spacing: 8,
+                    children: [
+                      Container(
+                        height: 35,
+                        width: 35,
+                        clipBehavior: Clip.antiAlias,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          color: Colors.red,
+                        ),
+                        child: Image.asset('assets/habitera_icon.png'),
+                      ),
+
+                      Text(
+                        appName,
+                        style: context.screenTitle.copyWith(fontSize: 26),
+                      ),
+                    ],
                   ),
 
                   SizedBox(height: 49.0),
@@ -149,7 +169,15 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                               }
                               return;
                             },
-                      style: ElevatedButton.styleFrom(shape: StadiumBorder()),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: isDark
+                            ? ColorPicker.sky600
+                            : ColorPicker.ink900,
+                        foregroundColor: isDark
+                            ? ColorPicker.darkTextTitle
+                            : ColorPicker.white,
+                        shape: StadiumBorder(),
+                      ),
                       child: _isLoading
                           ? AuthCircularProgress()
                           : Text('Sign up'),

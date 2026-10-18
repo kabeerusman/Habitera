@@ -7,7 +7,7 @@ import 'package:habitera/constants/sizes.dart';
 import 'package:habitera/constants/texts.dart';
 import 'package:habitera/features/habit_tracker/data/models/habit.dart';
 import 'package:habitera/features/habit_tracker/data/models/habit_isar.dart';
-import 'package:habitera/features/habit_tracker/presentation/habit_provider.dart';
+import 'package:habitera/features/habit_tracker/presentation/providers/habit_provider.dart';
 import 'package:habitera/features/habit_tracker/presentation/widgets/custom_switch.dart';
 import 'package:habitera/features/habit_tracker/presentation/widgets/emoji_picker_field.dart';
 import 'package:habitera/features/settings/presentation/settings_provider.dart';

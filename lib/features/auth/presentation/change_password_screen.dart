@@ -135,6 +135,8 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
       appBar: AppBar(title: const Text('Change Password')),
       body: SafeArea(
@@ -148,8 +150,10 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
                 Text(
                   'Enter your current password, then choose a new one',
                   style: context.body.copyWith(
-                    fontSize: 15,
-                    color: ColorPicker.ink500,
+                    fontSize: 16,
+                    color: isDark
+                        ? ColorPicker.darkTextTitle
+                        : ColorPicker.ink500,
                   ),
                 ),
                 kSizedBoxH20,
@@ -174,6 +178,7 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
                             ),
                           ),
                         ),
+                        kSizedBoxH5,
                         Align(
                           alignment: Alignment.centerRight,
                           child: TextButton(
@@ -186,7 +191,10 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
                             child: Text(
                               'Forgot Password?',
                               style: context.small.copyWith(
-                                color: ColorPicker.ink500,
+                                fontSize: 15,
+                                color: isDark
+                                    ? ColorPicker.darkTextTitle
+                                    : ColorPicker.ink500,
                               ),
                             ),
                           ),
@@ -208,7 +216,10 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
                         Text(
                           'At least 6 characters',
                           style: context.small.copyWith(
-                            color: ColorPicker.ink500,
+                            fontSize: 14,
+                            color: isDark
+                                ? ColorPicker.darkTextTitle
+                                : ColorPicker.ink500,
                           ),
                         ),
                         kSizedBoxH20,
@@ -236,12 +247,17 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
                   child: ElevatedButton(
                     onPressed: _isLoading ? null : _submit,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: ColorPicker.ink900,
-                      foregroundColor: ColorPicker.white,
+                      backgroundColor: isDark
+                          ? ColorPicker.sky600
+                          : ColorPicker.ink900,
+                      foregroundColor: isDark
+                          ? ColorPicker.darkTextTitle
+                          : ColorPicker.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
+
                     child: _isLoading
                         ? const AuthCircularProgress()
                         : const Text('Update Password'),

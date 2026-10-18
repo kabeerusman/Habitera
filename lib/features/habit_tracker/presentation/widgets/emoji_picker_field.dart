@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:habitera/constants/color_picker.dart';
 import 'package:habitera/constants/enums.dart';
+import 'package:habitera/utils/extensions.dart';
 
 /// Inline emoji picker for the Add/Edit habit forms: every choice from
 /// kHabitEmojiChoices shown at once in a grey circle, with the selected
@@ -23,33 +24,117 @@ class EmojiPickerField extends StatelessWidget {
       text: kHabitEmojiChoices.contains(selectedEmoji) ? '' : selectedEmoji,
     );
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     final picked = await showDialog<String>(
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          title: const Text('Choose an emoji'),
+          // Same look as the delete dialog, so the app feels consistent
+          backgroundColor: isDark
+              ? ColorPicker.darkSurfaceCard
+              : ColorPicker.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: Text(
+            'Choose an emoji',
+            textAlign: TextAlign.center,
+            style: context.screenTitle.copyWith(fontSize: 20),
+          ),
           content: TextField(
             controller: controller,
             autofocus: true,
-            maxLength: 2,
+            // ------------- CHANGED: 2 -> 1. This field is for ONE emoji.
+            // Flutter counts a whole emoji as one character, so this is safe.
+            // Test it with a flag or a family emoji to be sure.
+            maxLength: 1,
+            // -------------
             textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 28),
-            decoration: const InputDecoration(counterText: ''),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text('Cancel'),
+            style: const TextStyle(fontSize: 36),
+            decoration: InputDecoration(
+              counterText: '',
+              // hintText: '🙂', // shows what kind of input is expected
+              // ------------- A soft filled box instead of a bare underline
+              filled: true,
+              fillColor: isDark
+                  ? ColorPicker.darkBorderDefault
+                  : ColorPicker.ink100,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: BorderSide.none,
+              ),
+              // -------------
             ),
-            TextButton(
-              onPressed: () =>
-                  Navigator.of(dialogContext).pop(controller.text.trim()),
-              child: const Text('Done'),
+          ),
+          actionsPadding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+          actions: [
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.of(dialogContext).pop(),
+                    style: OutlinedButton.styleFrom(
+                      minimumSize: const Size.fromHeight(44),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text('Cancel'),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () =>
+                        Navigator.of(dialogContext).pop(controller.text.trim()),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: isDark
+                          ? ColorPicker.sky600
+                          : ColorPicker.ink900,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      minimumSize: const Size.fromHeight(44),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text('Done'),
+                  ),
+                ),
+              ],
             ),
           ],
         );
       },
     );
+    // final picked = await showDialog<String>(
+    //   context: context,
+    //   builder: (dialogContext) {
+    //     return AlertDialog(
+    //       title: const Text('Choose an emoji'),
+    //       content: TextField(
+    //         controller: controller,
+    //         autofocus: true,
+    //         maxLength: 2,
+    //         textAlign: TextAlign.center,
+    //         style: const TextStyle(fontSize: 28),
+    //         decoration: const InputDecoration(counterText: ''),
+    //       ),
+    //       actions: [
+    //         TextButton(
+    //           onPressed: () => Navigator.of(dialogContext).pop(),
+    //           child: const Text('Cancel'),
+    //         ),
+    //         TextButton(
+    //           onPressed: () =>
+    //               Navigator.of(dialogContext).pop(controller.text.trim()),
+    //           child: const Text('Done'),
+    //         ),
+    //       ],
+    //     );
+    //   },
+    // );
 
     if (picked != null && picked.isNotEmpty) onChanged(picked);
   }
@@ -57,6 +142,7 @@ class EmojiPickerField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isCustom = !kHabitEmojiChoices.contains(selectedEmoji);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Wrap(
       spacing: 10,
@@ -75,7 +161,10 @@ class EmojiPickerField extends StatelessWidget {
           onTap: () => _pickCustomEmoji(context),
           child: isCustom
               ? _EmojiGlyph(selectedEmoji)
-              : const Icon(Icons.add_rounded, color: ColorPicker.ink500),
+              : Icon(
+                  Icons.add_rounded,
+                  color: isDark ? ColorPicker.white : ColorPicker.ink500,
+                ),
         ),
       ],
     );
@@ -95,6 +184,8 @@ class _EmojiCircle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -102,10 +193,17 @@ class _EmojiCircle extends StatelessWidget {
         height: 44,
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: isSelected ? ColorPicker.sky50 : ColorPicker.ink50,
+          color: isSelected
+              ? isDark
+                    ? ColorPicker.darkBorderDefault
+                    : ColorPicker.sky50
+              : (isDark ? ColorPicker.darkBorderDefault : ColorPicker.ink50),
           shape: BoxShape.circle,
           border: isSelected
-              ? Border.all(color: ColorPicker.sky400, width: 2)
+              ? Border.all(
+                  color: isDark ? ColorPicker.sky600 : ColorPicker.sky400,
+                  width: 2,
+                )
               : null,
         ),
         child: child,
@@ -128,7 +226,11 @@ class _EmojiGlyph extends StatelessWidget {
     return Text(
       emoji,
       style: const TextStyle(fontSize: _fontSize, height: 1),
-      strutStyle: const StrutStyle(fontSize: _fontSize, height: 1, forceStrutHeight: true),
+      strutStyle: const StrutStyle(
+        fontSize: _fontSize,
+        height: 1,
+        forceStrutHeight: true,
+      ),
     );
   }
 }
